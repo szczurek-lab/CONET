@@ -110,11 +110,11 @@ int main(int argc, char **argv)
 	
 	auto parameters = read_parameters(argv);
 	auto data_dir = get<0>(parameters);
-	std::ofstream tree_file{ data_dir.append("inferred_tree") };
+	std::ofstream tree_file{ string(data_dir).append("inferred_tree") };
 
 	Random<double> random(SEED);
 
-    VectorCellProvider<double> provider = readFile(data_dir.append("ratios"), data_dir.append("counts"), data_dir.append("counts_squared"), ';', COUNTS_SCORE_CONSTANT != 0.0);
+    VectorCellProvider<double> provider = readFile(string(data_dir).append("ratios"), string(data_dir).append("counts"), string(data_dir).append("counts_squared"), ';', COUNTS_SCORE_CONSTANT != 0.0);
     CountsScoring<double> counts_scoring{ &provider };
 
     log("Input files have been loaded succesfully");
