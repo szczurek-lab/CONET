@@ -3,6 +3,7 @@ import numpy as np
 from scipy.stats import norm
 import math
 
+
 def _check_parameters(weights, means, variances, var_0):
     lengths = {len(weights), len(means), len(variances)}
     if len(lengths) > 1:
@@ -31,8 +32,7 @@ class RatiosDistribution:
 
     def sample_non_breakpoint_ratio(self):
         return abs(np.random.normal(0, self.var_0 ** 0.5, 1)[0])
-        
-        
+
     def apply_density_at_points(self, points, breakpoint):
         if not breakpoint:
             return math.sqrt(self.var_0) * norm.pdf(points)
@@ -41,11 +41,10 @@ class RatiosDistribution:
             for i in range(1, len(self.means)):
                 result += self.weights[i] * math.sqrt(self.variances[i]) * norm.pdf(points, self.means[i])
             return result / self.__estimate_norming_constant()
-            
-            
+
     def __estimate_norming_constant(self):
         result = 0
-        for i in range(0,100000):
+        for i in range(0, 100000):
             index = random.choices(range(0, len(self.weights)), k=1, weights=self.weights)[0]
             sample = np.random.normal(self.means[index], self.variances[index] ** 0.5, 1)[0]
             if sample > 0:

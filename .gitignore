@@ -3,3 +3,6 @@
 /workspace.xml
 python/.idea/
 python/*/__pycache__/
+python/conet/src/synthetic_data/__pycache__
+python/conet/src/__pycache__
+python/notebooks/.ipynb_checkpoints
