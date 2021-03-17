@@ -4,6 +4,6 @@
 
 ## Running the script
 ```bash
-set @bin_dir variable to path to directory which cintains CoNET executable
+set @bin_dir variable to path to directory which contains CoNET executable
 ```
 
