@@ -55,6 +55,13 @@ void save_edge_confidence(std::string path, PointerTree &tree, std::map<std::pai
     }
 }
 
+void save_parameters(string path, NormalMixtureLikelihood<double> likelihood) {
+    std::ofstream file{ path };
+    file << likelihood.noBrkpNormal.mean << ";" << likelihood.noBrkpNormal.sd << "\n";
+    for (size_t i = 0; i < likelihood.mixture.weights.size(); i++) {
+        file << likelihood.mixture.weights[i] << ";" << -likelihood.mixture.gaussians[i].mean << ";" << likelihood.mixture.gaussians[i].sd << "\n";
+    }
+}
 
 /**
 Input parameters
@@ -73,7 +80,7 @@ extern int NUMBER_OF_MOVES_BETWEEN_SWAPS;
 **/
 
 
-const int PARAMETERS_COUNT = 15;
+const int PARAMETERS_COUNT = 16;
 
 std::tuple<std::string, size_t, size_t> read_parameters(char **argv) {
 	std::string data_dir{ argv[1] };
@@ -95,6 +102,7 @@ std::tuple<std::string, size_t, size_t> read_parameters(char **argv) {
 	NUMBER_OF_MOVES_BETWEEN_SWAPS = (size_t)std::stoi(argv[13]);
 
 	BURNIN = (size_t)std::stoi(argv[14]);
+    VERBOSE = std::stoi(argv[15]);
 	return make_tuple(data_dir, iterations_parameters, iterations_pt);
 }
 
@@ -111,9 +119,7 @@ int main(int argc, char **argv)
 	std::ofstream tree_file{ string(data_dir).append("inferred_tree") };
 
 	Random<double> random(SEED);
-	std::cout << "Zaczynam wszytywanie";
     VectorCellProvider<double> provider = readFile(string(data_dir).append("ratios"), string(data_dir).append("counts"), string(data_dir).append("counts_squared"), ';', COUNTS_SCORE_CONSTANT != 0.0);
-    std::cout << "Zakonczylem wszytywanie";
     log("Input files have been loaded succesfully");
     ParallelTemperingCoordinator<double> PT(provider, random);
 	auto result = PT.simulate(get<1>(parameters), get<2>(parameters));
@@ -125,6 +131,6 @@ int main(int argc, char **argv)
     save_hmm_matrix(string(data_dir).append("inferred_breakpoints"), get<0>(get<0>(result)), get<1>(get<0>(result)), provider.getLociCount());
     save_edge_confidence(string(data_dir).append("edge_confidence"), std::get<0>(get<0>(result)), std::get<3>(result), provider.get_loci_to_name());
 	save_attachment(string(data_dir).append("inferred_attachment"), provider.get_loci_to_name(), std::get<1>(get<0>(result)));
-  
+    save_parameters(string(data_dir).append("inferred_distribution"), get<4>(result));
     return 0;
 }

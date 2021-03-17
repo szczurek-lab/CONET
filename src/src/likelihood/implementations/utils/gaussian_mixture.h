@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <numeric>
+#include <sstream>
+
 
 #include "gaussian_utils.h"
 #include "../../../utils/random.h"
@@ -215,6 +217,16 @@ namespace Gauss {
 			this->random = g.random;
 			return *this;
 		}
+        
+        std::string to_string() {
+            std::stringstream stream;
+            
+            for (size_t i = 0; i < weights.size(); i++) {
+                stream << "(weight: " << weights[i] << " mean: " <<
+                        -gaussians[i].mean <<"sd: " <<gaussians[i].sd << ")\n";
+            }
+            return stream.str();
+        }
 
 	};
 }

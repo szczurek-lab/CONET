@@ -13,11 +13,15 @@ class CoNET:
         try:
             cmd = [self.bin_path] + parameters.to_string()
             print(' '.join(cmd))
-            cmd_output = subprocess.run(cmd)
+            process = subprocess.Popen(cmd, stdout = subprocess.PIPE)
+            while True: 
+                output = process.stdout.readline()
+                if not output: 
+                    break 
+                else: 
+                    print(output.rstrip()) 
         except subprocess.SubprocessError as e:
             print("Status : FAIL", e.returncode, e.output, e.stdout, e.stderr)
         else:
             pass
 
-        # input_data.clear(parameters.data_dir)
-        print("TODO")

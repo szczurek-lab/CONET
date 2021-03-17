@@ -71,18 +71,20 @@ namespace Gauss {
 		Gaussian(const Gaussian<Real_t> &g) : random{g.random} {
 			this->mean = g.mean;
 			this->sd = g.sd;
-			//this->adaptiveMHMean = g.adaptiveMHMean;
-			//this->adaptiveMHVariance = g.adaptiveMHVariance;
 		}
 
 		Gaussian<Real_t>& operator = (const Gaussian<Real_t> &g) {
 			this->mean = g.mean;
 			this->sd = g.sd;
 			this->random = g.random;
-			//this->adaptiveMHMean = g.adaptiveMHMean;
-			//this->adaptiveMHVariance = g.adaptiveMHVariance;
 			return *this;
 		}
+        
+        std::string to_string() {
+             std::stringstream stream;
+             stream << "mean: " << mean << " sd: " << sd << "\n";
+             return stream.str();
+        }
 	};
 }
 

@@ -108,6 +108,10 @@ private:
 		}
 		log("Finished parameter estimation");
 		auto map = likelihood.get_MAP();
+        log("Estimated breakpoint distribution:");
+        log(map.first.to_string());
+        log("Estimated no-breakpoint distribution:");
+        log(map.second.to_string());
 		return std::make_tuple(map.first, map.second, calc.MAP);
 	}
 
@@ -124,6 +128,13 @@ private:
 				th.join();
 			}
 			if (THREADS_NUM != 1) swap_step();
+            
+            if (VERBOSE && i % 1000 == 0) {
+                log("State after " , i*NUMBER_OF_MOVES_BETWEEN_SWAPS, " iterations:");
+                log("Tree size: ", this->tree_sampling_coordinators[0]->tree->getSize());
+                log("Log-likelihood: ", this->likelihood_calculators[0]->getLikelihood());
+                
+            }
 		}
 	}
 
@@ -214,7 +225,7 @@ public:
 	{}
 
 
-std::tuple<std::tuple<PointerTree, std::vector<BreakpointPair>, Real_t>, std::string, Real_t, std::map<std::pair<BreakpointPair, BreakpointPair>, size_t>> simulate(size_t iterations_parameters, size_t iterations_pt)
+std::tuple<std::tuple<PointerTree, std::vector<BreakpointPair>, Real_t>, std::string, Real_t, std::map<std::pair<BreakpointPair, BreakpointPair>, size_t>,NormalMixtureLikelihood<Real_t>> simulate(size_t iterations_parameters, size_t iterations_pt)
 	{
 		auto parameters = prepare_starting_parameters();
 		auto parameters_MAP = estimateParameters(parameters.first, parameters.second, iterations_parameters);
@@ -223,7 +234,7 @@ std::tuple<std::tuple<PointerTree, std::vector<BreakpointPair>, Real_t>, std::st
 		prepare_sampling_services(&likelihood);
 		mcmc_simulation(iterations_pt);
 		auto bestTree = choose_best_tree();
-		return std::make_tuple(bestTree, likelihood_calculators[0]->likelihood->toString(), -1 , tree_sampling_coordinators[0]->edge_count);
+		return std::make_tuple(bestTree, likelihood_calculators[0]->likelihood->toString(), -1 , tree_sampling_coordinators[0]->edge_count, likelihood);
 	}
 	
 };

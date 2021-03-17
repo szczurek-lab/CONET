@@ -81,7 +81,7 @@ class DataGenerator:
             result.append(label)
         result.insert(0, (0,0))
         return result
-
+        
     def __random_tree(self, nodes):
         tree = nx.DiGraph()
         bit_map = np.zeros(len(nodes))

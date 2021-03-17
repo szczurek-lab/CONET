@@ -25,7 +25,8 @@ class CoNETParameters:
                  threads_likelihood=4,
                  parameter_resampling_frequency=10,
                  moves_between_swaps=10,
-                 burn_in=10000
+                 burn_in=10000,
+                 verbose=True
                  ):
         self.data_dir = data_dir
         self.param_inf_iters = param_inf_iters
@@ -41,6 +42,7 @@ class CoNETParameters:
         self.parameter_resampling_frequency = parameter_resampling_frequency
         self.moves_between_swaps = moves_between_swaps
         self.burn_in = burn_in
+        self.verbose = (lambda x: 1 if x else 0)(verbose)
 
     def to_string(self):
         sep = ' '
@@ -58,4 +60,5 @@ class CoNETParameters:
             str(self.threads_likelihood),
             str(self.parameter_resampling_frequency),
             str(self.moves_between_swaps),
-            str(self.burn_in)]
+            str(self.burn_in),
+            str(self.verbose)]

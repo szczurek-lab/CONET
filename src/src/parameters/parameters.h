@@ -18,4 +18,5 @@ extern size_t NUMBER_OF_MOVES_BETWEEN_SWAPS;
 extern size_t MIXTURE_SIZE;
 extern long SEED;
 extern size_t BURNIN;
+extern bool VERBOSE;
 #endif // !PARAMETERS_H

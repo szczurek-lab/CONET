@@ -19,26 +19,10 @@ constexpr bool TEST = false;
 
 void print();
 
-void printErr();
-
-void printSTDOUT();
-
 template <class A0, class ...Args> void print(A0 a0, Args ...args)
 {
-	LOG_FILE << a0;
-	print(args...);
-}
-
-template <class A0, class ...Args> void printSTDOUT(A0 a0, Args ...args)
-{
 	std::cout << a0;
-	printSTDOUT(args...);
-}
-
-template <class A0, class ...Args> void printErr(A0 a0, Args ...args)
-{
-	LOG_FILE << a0;
-	printErr(args...);
+	print(args...);
 }
 
 template <class ...Args> void log(Args ...args)
@@ -48,12 +32,12 @@ template <class ...Args> void log(Args ...args)
 
 template <class ...Args> void logErr(Args ...args)
 {
-	return printErr("Error: ", args...);
+	return print("Error: ", args...);
 }
 
 template <class ...Args> void logDebug(Args ...args)
 {
-	return printSTDOUT("Error: ", args...);
+	return print("Error: ", args...);
 }
 
 #endif // !LOGGER_H
