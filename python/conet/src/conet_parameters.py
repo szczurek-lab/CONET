@@ -44,7 +44,7 @@ class CoNETParameters:
 
     def to_string(self):
         sep = ' '
-        return sep.join([
+        return [
             str(self.data_dir),
             str(self.param_inf_iters),
             str(self.pt_inf_iters),
@@ -58,4 +58,4 @@ class CoNETParameters:
             str(self.threads_likelihood),
             str(self.parameter_resampling_frequency),
             str(self.moves_between_swaps),
-            str(self.burn_in)])
+            str(self.burn_in)]

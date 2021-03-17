@@ -233,7 +233,7 @@ public:
 	LikelihoodCalculator(NormalMixtureLikelihood<Real_t> *lk, PointerTree *tree,
 		VectorCellProvider<Real_t> *cells, size_t maxBreakpoint, unsigned int seed) : likelihood{ lk }, tree{ tree }
 		, cells{ cells }, maxBreakpoint{ maxBreakpoint }, random{ seed }, attachment{ cells->getCellsCount() }, tmp_attachment{ cells->getCellsCount() },
-		counts_scoring{ cells } {
+		counts_scoring{ cells , COUNTS_SCORE_CONSTANT != 0.0} {
 		likelihood_result.resize(cells->getCellsCount());
 		tmp_likelihood_accumulator.resize(cells->getCellsCount());
 		rootLikelihoods.resize(cells->getCellsCount());

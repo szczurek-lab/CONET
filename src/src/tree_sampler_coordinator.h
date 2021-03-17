@@ -458,7 +458,7 @@ tree{ tree },
 		likelihoodCalculator{ lC }, 
 		vertexSet{ VertexSetNamespace::create<Real_t>(maxBrkp, cells->getChromosomeMarkers(), seed) },
 				cells{ cells },
-						countsScoring{ cells },
+						countsScoring{ cells , COUNTS_SCORE_CONSTANT !=0.0 },
 		random{ seed }, 
 		moveProbability{ moveProbability },
 		pid{ pid }  {

@@ -65,15 +65,15 @@ std::vector<size_t> getChromosomeMarkers(std::vector<double> data) {
 VectorCellProvider<double> dataToCellProvider(std::vector<std::vector<double>> data, std::vector<std::string> names, std::vector<std::string> chromosomes) {
 	VectorCellProvider<double> provider(data[0].size());
 	provider.setChromosomeMarkers(getChromosomeMarkers(data[0]));
-	provider.setEventLengths(data[1]);
-    provider.setBetweenLengths(data[2]);
-	for (size_t i = 3; i < data.size(); i++) {
-		for (auto & el: data[i])
+    provider.setBetweenLengths(data[1]);
+	for (size_t i = 2; i < data.size(); i++) {
+		for (auto &el: data[i])
 		{
 			el = -std::abs(el);
 		}
 		provider.postCell(data[i]);
 	}
+	
 	provider.set_loci_to_name_map(names, chromosomes);
 	return provider;
 }

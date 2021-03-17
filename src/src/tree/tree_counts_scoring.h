@@ -144,7 +144,10 @@ public:
 		max_region_id = 0;
 	}
 public:
-	CountsScoring<Real_t>(VectorCellProvider<Real_t> const *cells) : cells{ cells } {
+	CountsScoring<Real_t>(VectorCellProvider<Real_t> const *cells, bool counts_score_constant_is_not_zero) : cells{ cells } {
+		if (!counts_score_constant_is_not_zero) {
+			return;
+		}
 		this->sum_counts = cells->get_sum_counts();
 		this->squared_counts = cells->get_squared_counts();
 		std::vector<bool> t;

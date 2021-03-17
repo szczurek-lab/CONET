@@ -19,7 +19,6 @@ private:
 	* For pair of breakpoints (br1, br2) length of event (br1, br2) 
 	* is equal to eventLengths[br1] - eventLengths[br2]
 	*/
-	std::vector<Real_t> eventLengths;
     
     std::vector<Real_t> betweenBinsLengths;
 	/**
@@ -38,8 +37,8 @@ public:
 	VectorCellProvider(size_t lociCount) : lociCount{ lociCount }  {
 	}
 
-	VectorCellProvider(size_t lociCount, std::vector<Real_t> eventLengths, std::vector<Real_t> between, std::map<size_t, std::string> loci_to_name_map) :
-		lociCount{ lociCount }, eventLengths{ eventLengths }, betweenBinsLengths{between}, loci_to_name_map{ loci_to_name_map } {
+	VectorCellProvider(size_t lociCount, std::vector<Real_t> between, std::map<size_t, std::string> loci_to_name_map) :
+		lociCount{ lociCount }, betweenBinsLengths{between}, loci_to_name_map{ loci_to_name_map } {
 	}
 
 	Real_t get_counts_score_length_of_bin(size_t bin) const {
@@ -86,11 +85,8 @@ public:
 		loci_to_name_map.clear();
 		for (size_t i = 0; i < names.size(); i++)
 		{
-			loci_to_name_map[i] = std::to_string((int) std::stold(chromosomes[i])) + "_" + std::to_string((int) std::stold(names[i]));
+			loci_to_name_map[i] = std::to_string((int) std::stold(chromosomes[i])) + "_" + names[i];
 		}
-	}
-	void setEventLengths(std::vector<Real_t> eventLengths) {
-		this->eventLengths = eventLengths;
 	}
 
     void setBetweenLengths(std::vector<Real_t> between) {
@@ -110,7 +106,7 @@ public:
 	}
 
 	Real_t getEventLength(BreakpointPair brkp) const {
-		if (eventLengths.empty()) {
+		if (betweenBinsLengths.empty()) {
 			return (Real_t)brkp.second - brkp.first;
 		}
         size_t bin = brkp.first;

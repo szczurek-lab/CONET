@@ -46,6 +46,6 @@ class SyntheticInputData(InputData):
 
     def __init__(self, ratios, bps_matrix, cell_to_node, no_loci):
         InputData.__init__(self, ratios, list(map(str, range(0, no_loci))), [1 for i in range(0, no_loci)],
-                           range(0, no_loci))
+                           [1 for i in range(0, no_loci)])
         self.cell_to_node = cell_to_node
         self.bps_matrix = bps_matrix

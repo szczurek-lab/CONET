@@ -1,12 +1,9 @@
-﻿// CNVTree.cpp: definiuje punkt wejścia dla aplikacji.
-//
-#include <utility>
+﻿#include <utility>
 #include <chrono>
 #include <cstdlib>
 #include <tuple>
 #include <chrono>
 
-#include "CNVTree.h"
 #include "src/tree/pointer_tree.h"
 #include "src/cell_provider/csv_reader/csv_reader.h"
 #include "src/tree_sampler_coordinator.h"
@@ -105,6 +102,7 @@ int main(int argc, char **argv)
 {
 	if (argc != PARAMETERS_COUNT) {
 		logErr("Invalid number of parameters");
+		logErr("Received: ", argc, " expected: ", PARAMETERS_COUNT); 
 		return -1;
 	}
 	
@@ -113,10 +111,9 @@ int main(int argc, char **argv)
 	std::ofstream tree_file{ string(data_dir).append("inferred_tree") };
 
 	Random<double> random(SEED);
-
+	std::cout << "Zaczynam wszytywanie";
     VectorCellProvider<double> provider = readFile(string(data_dir).append("ratios"), string(data_dir).append("counts"), string(data_dir).append("counts_squared"), ';', COUNTS_SCORE_CONSTANT != 0.0);
-    CountsScoring<double> counts_scoring{ &provider };
-
+    std::cout << "Zakonczylem wszytywanie";
     log("Input files have been loaded succesfully");
     ParallelTemperingCoordinator<double> PT(provider, random);
 	auto result = PT.simulate(get<1>(parameters), get<2>(parameters));
@@ -125,9 +122,9 @@ int main(int argc, char **argv)
 	PointerTree inferred_tree = std::get<0>(std::get<0>(result));
 	tree_file << inferred_tree.toString(provider.get_loci_to_name());
 
-    save_hmm_matrix(data_dir.append("inferred_breakpoints"), get<0>(get<0>(result)), get<1>(get<0>(result)), provider.getLociCount());
-    save_edge_confidence(data_dir.append("edge_confidence"), std::get<0>(get<0>(result)), std::get<3>(result), provider.get_loci_to_name());
-	save_attachment(data_dir.append("inferred_attachment"), provider.get_loci_to_name(), std::get<1>(get<0>(result)));
+    save_hmm_matrix(string(data_dir).append("inferred_breakpoints"), get<0>(get<0>(result)), get<1>(get<0>(result)), provider.getLociCount());
+    save_edge_confidence(string(data_dir).append("edge_confidence"), std::get<0>(get<0>(result)), std::get<3>(result), provider.get_loci_to_name());
+	save_attachment(string(data_dir).append("inferred_attachment"), provider.get_loci_to_name(), std::get<1>(get<0>(result)));
   
     return 0;
 }

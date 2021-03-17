@@ -11,7 +11,7 @@ class CoNET:
     def infer_tree(self, parameters, input_data):
         input_data.save(parameters.data_dir)
         try:
-            cmd = [self.bin_path, parameters.to_string()]
+            cmd = [self.bin_path] + parameters.to_string()
             print(' '.join(cmd))
             cmd_output = subprocess.run(cmd)
         except subprocess.SubprocessError as e:
