@@ -2,15 +2,8 @@
 
 
 
-## Installation
+## Running the script
 ```bash
-git clone https://github.com/tc360950/CoNET.git # Clone the repository
-cd CoNET/src
-make                                          # Build the executables
+set @bin_dir variable to path to directory which cintains CoNET executable
 ```
 
-### Python wrapper
-```bash
-cd python/conet
-pip install .
-```
