@@ -12,7 +12,7 @@ def _check_parameters(weights, means, variances, var_0):
         raise RuntimeError("Means, weights and variances must be positive!")
 
 
-class DifferenceDistribution:
+class RatiosDistribution:
     def __init__(self, weights, means, variances, var_0):
         _check_parameters(weights, means, variances, var_0)
         self.weights = weights
@@ -24,7 +24,7 @@ class DifferenceDistribution:
         index = random.choices(range(0, len(self.weights)), k=1, weights=self.weights)[0]
         res = np.random.normal(self.means[index], self.variances[index] ** 0.5, 1)
         if res > 0:
-            return res
+            return res[0]
         else:
             return self.sample_breakpoint_ratio()
 
