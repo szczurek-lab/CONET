@@ -79,7 +79,7 @@ class DataGenerator:
             label = self.__sample_node_label(candidates)
             candidates.remove(label)
             result.append(label)
-        result.insert(0, (0, 0))
+        result.insert(0, (0,0))
         return result
 
     def __random_tree(self, nodes):
