@@ -39,8 +39,8 @@ class InferenceResult:
         if text == '(0,0)':
             return '0', '0'
         text = text.replace('\n', "").replace('(', '').replace(')', '')
-        loci_left = text.split(',')[0].split("_")[1]
-        loci_right = text.split(',')[1].split("_")[1]
+        loci_left = text.split(',')[0]
+        loci_right = text.split(',')[1]
         return loci_left, loci_right
     
     def __read_distriubution(self, path):

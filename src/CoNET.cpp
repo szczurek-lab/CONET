@@ -120,6 +120,7 @@ int main(int argc, char **argv)
 
 	Random<double> random(SEED);
     VectorCellProvider<double> provider = readFile(string(data_dir).append("ratios"), string(data_dir).append("counts"), string(data_dir).append("counts_squared"), ';', COUNTS_SCORE_CONSTANT != 0.0);
+    
     log("Input files have been loaded succesfully");
     ParallelTemperingCoordinator<double> PT(provider, random);
 	auto result = PT.simulate(get<1>(parameters), get<2>(parameters));

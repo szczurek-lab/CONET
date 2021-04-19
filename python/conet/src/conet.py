@@ -24,4 +24,20 @@ class CoNET:
             print("Status : FAIL", e.returncode, e.output, e.stdout, e.stderr)
         else:
             pass
+            
+    def infer_tree(self, parameters):
+        try:
+            cmd = [self.bin_path] + parameters.to_string()
+            print(' '.join(cmd))
+            process = subprocess.Popen(cmd, stdout = subprocess.PIPE)
+            while True: 
+                output = process.stdout.readline()
+                if not output: 
+                    break 
+                else: 
+                    print(output.rstrip()) 
+        except subprocess.SubprocessError as e:
+            print("Status : FAIL", e.returncode, e.output, e.stdout, e.stderr)
+        else:
+            pass
 

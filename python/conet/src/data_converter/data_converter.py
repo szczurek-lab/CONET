@@ -18,13 +18,19 @@ class DataConverter:
         self.event_length_normalizer = event_length_normalizer
 
     # indices must be numbered from 0
-    def create_CoNET_input_files(self, loci_candidate_indices: list, out_path: str):
+    def create_CoNET_input_files(self, loci_candidate_indices: list, out_path: str, chromosomes=None):
+        if chromosomes is not None:
+            loci_candidate_indices = self.__filter_loci_to_chromosomes(loci_candidate_indices, chromosomes)
+            
         diffs = self.__create_diff_matrix(loci_candidate_indices)
         counts, squared_counts = self.__create_sum_and_squared_counts_matrices(loci_candidate_indices)
-        np.savetxt("ratios", diffs, delimiter=";")
-        np.savetxt("counts", counts, delimiter=";")
-        np.savetxt("counts_squared", squared_counts, delimiter=";")
-
+        np.savetxt(out_path + "ratios", diffs, delimiter=";", fmt='%.6f')
+        np.savetxt(out_path + "counts", counts, delimiter=";", fmt='%.6f')
+        np.savetxt(out_path + "counts_squared", squared_counts, delimiter=";", fmt='%.6f')
+    
+    def __filter_loci_to_chromosomes(self, loci_candidate_indices, chromosomes):
+        return [loci for loci in loci_candidate_indices if self.corrected_counts.iloc[loci, self.CHROMOSOME_COLUMN] in chromosomes]
+        
     def __get_loci_chromosome(self, loci):
         return self.corrected_counts.iloc[loci][self.CHROMOSOME_COLUMN]
 
@@ -71,12 +77,12 @@ class DataConverter:
 
     def __get_sum_of_counts(self, left_loci, right_loci):
         counts = self.corrected_counts.iloc[left_loci:right_loci, self.NON_CELL_COLUMNS:]
-        return counts.sum().to_numpy()
+        return np.array(counts.sum())
 
     def __get_square_of_counts(self, left_loci, right_loci):
         counts = self.corrected_counts.iloc[left_loci:right_loci, self.NON_CELL_COLUMNS:]
         squares = np.square(counts)
-        return squares.sum().to_numpy()
+        return np.array(squares.sum())
 
     def __create_sum_and_squared_counts_matrices(self, loci_candidate_indices):
         counts = np.zeros((len(loci_candidate_indices), self.cells + 1))
