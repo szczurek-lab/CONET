@@ -3,34 +3,63 @@ import numpy as np
 
 
 class DataConverter:
+    human_chr_lengths = {
+        1: 249250621,
+        2: 243199373,
+        3: 198022430,
+        4: 191154276,
+        5: 180915260,
+        6: 171115067,
+        7: 159138663,
+        8: 146364022,
+        9: 141213431,
+        10: 135534747,
+        11: 135006516,
+        12: 133851895,
+        13: 115169878,
+        14: 107349540,
+        15: 102531392,
+        16: 90354753,
+        17: 81195210,
+        18: 78077248,
+        19: 59128983,
+        20: 63025520,
+        21: 48129895,
+        22: 51304566,
+        23: 155270560,
+        24: 59373566
+    }
 
     def __init__(self, corrected_counts_path: str, delimiter: chr, default_bin_length: int,
-                 event_length_normalizer: int):
+                 event_length_normalizer: int, add_chromosome_ends=False):
         self.corrected_counts = pd.read_csv(corrected_counts_path, sep=delimiter, header=0, low_memory=False)
         self.NON_CELL_COLUMNS = 4
-        self.cells = self.corrected_counts.shape[1] - self.NON_CELL_COLUMNS
         self.NON_RATIO_DIFFS_COLUMNS = 3
         self.NEUTRAL_CN = 2.0
         self.CHROMOSOME_COLUMN = 0
         self.BIN_START_COLUMN = 1
         self.LOCI_COUNT = self.corrected_counts.shape[0]
+        self.cells = self.corrected_counts.shape[1] - self.NON_CELL_COLUMNS
         self.default_bin_length = default_bin_length
         self.event_length_normalizer = event_length_normalizer
+        if add_chromosome_ends:
+            self.__add_chromosome_ends()
 
     # indices must be numbered from 0
     def create_CoNET_input_files(self, loci_candidate_indices: list, out_path: str, chromosomes=None):
         if chromosomes is not None:
             loci_candidate_indices = self.__filter_loci_to_chromosomes(loci_candidate_indices, chromosomes)
-            
+
         diffs = self.__create_diff_matrix(loci_candidate_indices)
         counts, squared_counts = self.__create_sum_and_squared_counts_matrices(loci_candidate_indices)
         np.savetxt(out_path + "ratios", diffs, delimiter=";", fmt='%.6f')
         np.savetxt(out_path + "counts", counts, delimiter=";", fmt='%.6f')
         np.savetxt(out_path + "counts_squared", squared_counts, delimiter=";", fmt='%.6f')
-    
+
     def __filter_loci_to_chromosomes(self, loci_candidate_indices, chromosomes):
-        return [loci for loci in loci_candidate_indices if self.corrected_counts.iloc[loci, self.CHROMOSOME_COLUMN] in chromosomes]
-        
+        return [loci for loci in loci_candidate_indices if
+                self.corrected_counts.iloc[loci, self.CHROMOSOME_COLUMN] in chromosomes]
+
     def __get_loci_chromosome(self, loci):
         return self.corrected_counts.iloc[loci][self.CHROMOSOME_COLUMN]
 
@@ -103,3 +132,26 @@ class DataConverter:
                 counts[i, 0] = next_loci_index - loci_index
                 squared_counts[i, 0] = next_loci_index - loci_index
         return np.transpose(counts), np.transpose(squared_counts)
+
+    def __add_chromosome_ends(self):
+        sum = 0
+        for x in self.human_chr_lengths.values():
+            sum = sum + x
+        print(sum)
+        i = 0
+        while i < self.corrected_counts.shape[0]:
+            loci_chr = self.__get_loci_chromosome(i)
+            if i == self.corrected_counts.shape[0] - 1 or loci_chr != self.__get_loci_chromosome(i + 1):
+                line = np.full(self.corrected_counts.shape[1], self.NEUTRAL_CN)
+                line[self.CHROMOSOME_COLUMN] = loci_chr
+                line[self.BIN_START_COLUMN] = self.human_chr_lengths[loci_chr]
+                line[self.BIN_START_COLUMN + 1] = self.human_chr_lengths[loci_chr] + self.default_bin_length
+                line[self.BIN_START_COLUMN + 2] = self.default_bin_length
+                line = np.transpose(line)
+                dummy_line = pd.DataFrame({"chr": loci_chr}, index=[i + 1])
+                self.corrected_counts = pd.concat([self.corrected_counts.iloc[:(i+1)], dummy_line, self.corrected_counts.iloc[(i+1):]]).reset_index(drop=True)
+                self.corrected_counts.iloc[i+1] = line
+                i = i + 2
+            else:
+                i = i + 1
+        self.LOCI_COUNT = self.corrected_counts.shape[0]
