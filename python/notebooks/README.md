@@ -2,14 +2,15 @@
 
 
 
-## Running the script
+## Running the script (synthetic data)
 ```bash
 set @bin_dir variable to path to directory which contains CoNET executable
 ```
 
-## Running the script (biological)
+## Running the script (biological data)
 ```bash
-create data_dump folder 
 set @bin_dir variable to path to directory which contains CoNET executable
+Use provided R script to plot inferred tree and count matrix:
+  -
 ```
 
