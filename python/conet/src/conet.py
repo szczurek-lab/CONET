@@ -14,12 +14,10 @@ class CoNET:
             cmd = [self.bin_path] + parameters.to_string()
             print(' '.join(cmd))
             process = subprocess.Popen(cmd, stdout = subprocess.PIPE)
-            while True: 
-                output = process.stdout.readline()
-                if not output: 
-                    break 
-                else: 
-                    print(output.rstrip()) 
+            while process.poll() is None: 
+                l = process.stdout.readline()
+                print(l) 
+            print(process.stdout.read())
         except subprocess.SubprocessError as e:
             print("Status : FAIL", e.returncode, e.output, e.stdout, e.stderr)
         else:
@@ -30,12 +28,10 @@ class CoNET:
             cmd = [self.bin_path] + parameters.to_string()
             print(' '.join(cmd))
             process = subprocess.Popen(cmd, stdout = subprocess.PIPE)
-            while True: 
-                output = process.stdout.readline()
-                if not output: 
-                    break 
-                else: 
-                    print(output.rstrip()) 
+            while process.poll() is None: 
+                l = process.stdout.readline()
+                print(l) 
+            print(process.stdout.read())
         except subprocess.SubprocessError as e:
             print("Status : FAIL", e.returncode, e.output, e.stdout, e.stderr)
         else:

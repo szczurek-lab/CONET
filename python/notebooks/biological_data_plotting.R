@@ -7,14 +7,12 @@ library(htmlwidgets)
 library(webshot)
 library(DiagrammeR)
 library(stringr)
-library(DescTools)
-library(PerformanceAnalytics)
 library(heatmap3)
 
 
-tree_dir <- "data_dump/"
+tree_dir <- "./"
 reads_dir <- "data/"
-results_dir <- "data_dump/"
+results_dir <- "./"
 
 all_reads <- read.table(paste0(reads_dir, "SA501X3F_filtered_corrected_counts.csv"), sep =",", header = T, stringsAsFactors = F)
 
@@ -23,8 +21,8 @@ all_reads$chr[all_reads$chr == "Y"] <- "24"
 all_reads$chr <- as.numeric(all_reads$chr)
 
 
-TREE_FILE_NAME <- "data_dump/inferred_tree"
-ATTACHMENT_FILE_NAME <- "data_dump/inferred_attachment"
+TREE_FILE_NAME <- "inferred_tree"
+ATTACHMENT_FILE_NAME <- "inferred_attachment"
 
 create_edges_matrix <- function() {
   edges <- read.table(TREE_FILE_NAME, sep="-", stringsAsFactors = F)

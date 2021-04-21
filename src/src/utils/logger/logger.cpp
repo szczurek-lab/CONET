@@ -2,6 +2,6 @@
 
 void print()
 {
-	std::cout << "\n";
+	std::cout << std::endl;
 }
 
