@@ -1,4 +1,4 @@
-# CoNET
+# CONET
 
 ## About
 
