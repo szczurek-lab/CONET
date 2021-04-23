@@ -3,7 +3,7 @@
 import subprocess
 
 
-class CoNET:
+class CONET:
     # bin_path - path to directory with CoNET binaries
     def __init__(self, bin_path):
         self.bin_path = bin_path
