@@ -10,19 +10,18 @@ library(stringr)
 library(heatmap3)
 
 
-tree_dir <- "./"
-reads_dir <- "data/"
-results_dir <- "./"
+READS_DIR <- "data/"
+RESULTS_DIR <- "./"
 
-all_reads <- read.table(paste0(reads_dir, "SA501X3F_filtered_corrected_counts.csv"), sep =",", header = T, stringsAsFactors = F)
+all_reads <- read.table(paste0(READS_DIR, "SA501X3F_filtered_corrected_counts.csv"), sep =",", header = T, stringsAsFactors = F)
 
 all_reads$chr[all_reads$chr == "X"] <- "23"
 all_reads$chr[all_reads$chr == "Y"] <- "24"
 all_reads$chr <- as.numeric(all_reads$chr)
 
 
-TREE_FILE_NAME <- "inferred_tree"
-ATTACHMENT_FILE_NAME <- "inferred_attachment"
+TREE_FILE_NAME <- paste(RESULTS_DIR, "inferred_tree")
+ATTACHMENT_FILE_NAME <- paste(RESULTS_DIR, "inferred_attachment")
 
 create_edges_matrix <- function() {
   edges <- read.table(TREE_FILE_NAME, sep="-", stringsAsFactors = F)
