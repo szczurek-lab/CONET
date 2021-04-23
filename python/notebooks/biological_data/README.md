@@ -21,9 +21,9 @@ Bin's start loci
 Bin's end loci
 ### Width 
 Bin's width
-
+```bash
 Example of input matrix for SA501X3F xenograft breast cancer data is contained in data/SA501X3F_filtered_corrected_counts.csv
-
+```
 ### Breakpoint candidate loci
 Apart from the corrected counts matrix CONET expects indices of breakpoint candidate loci (only pairs of loci from this set will constitute potential event set).
 Each candidate loci should be given in the form of corresponding bin's index in the corrected counts matrix (indices should start at 0).
