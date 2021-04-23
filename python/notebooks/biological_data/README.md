@@ -33,3 +33,6 @@ Number which will be used for artifical bin's corresponding to ends of chromosom
 
 ### event_length_normalizer
 Real constant which will be used to normalize event lengths (in the notebook this constant is set to total length of all chromosomes). 
+
+### add_chr_ends_to_indices (True / False)
+It is recommended to add artifical chromosome ends to the set of candidate loci with neutral CN. This can either be done manually by the user by insertion of additonal bins to corrected counts matrix (add_chr_ends_to_indices=False) or automatically (add_chr_ends_to_indices=True).
