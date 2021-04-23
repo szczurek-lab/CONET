@@ -1,8 +1,11 @@
 # CoNET
 
+## About
 
+## Requirements
 
 ## Installation
+###C++
 ```bash
 git clone https://github.com/tc360950/CONET.git # Clone the repository
 cd CONET/src
