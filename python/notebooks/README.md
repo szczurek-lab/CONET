@@ -8,7 +8,7 @@ This directory contains two notebooks that present examples of CONET usage for:
   Applies CONET to SA501X3F xenograft breast cancer data.
 ## Usage details
 ### CONET user-defined parameters
- CONET depends on CONETParameters object of class 
+ CONET depends on a number of user-defined parameters which are represented by objects of class CONETParameters. 
 | Parameter name | Description | Default value |
 | ---- | -------- | --- |
 | **data_dir** | Path to directory containing input files. Inference results will be saved there.  |"./" |
