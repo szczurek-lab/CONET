@@ -13,10 +13,10 @@
 | **data_size_prior_c** | sdfdsf | 1.0 |
 | **use_event_lengths_in_attachment** | sdfdsf | True |
 | **seed** | Seed for C++ RNG | 12312 |
-| **mixture_size** | sdfdsf | 4 |
+| **mixture_size** | Initial number of components in difference distribution for breakpoint loci. | 4 |
 | **num_replicas** | Number of tempered chain replicas in MAP event tree search. | 5 |
 | **threads_likelihood** | Number of threads which will be used for the most demanding likelihood calculations. | 4 |
-| **parameter_resampling_frequency** | sdfdsf | 10 |
-| **moves_between_swaps** | sdfdsf | 10 |
+| **parameter_resampling_frequency** | Number of tree MCMC moves for each parameter MCMC move. | 10 |
+| **moves_between_swaps** | Number of MCMC moves done by each replica before swap move is attempted. | 10 |
 | **burn_in** | sdfdsf | 10000 |
 | **verbose** | True if CONET should print messages during inference. | True |
