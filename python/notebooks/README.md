@@ -29,10 +29,10 @@ This directory contains two notebooks that present examples of CONET usage for:
 
 ### Most important Python classes:
 #### CONET
-
+Thin wrapper over CONET - calls CONET executable.
 #### CONETParameters
-
+Represents user-defined parameters passed to CONET.
 #### DataConverter
-
-
+Converts corrected counts matrix to CONET specific input.
 #### InferenceResult
+Reads inference results from output files.
