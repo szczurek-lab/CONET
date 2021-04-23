@@ -1,7 +1,8 @@
 # CoNET
 
 ## Contents
-### Synthetic_data
+This directory contains two notebooks that present examples of CONET usage for:
+### Synthetic data
   Contains notebook for data 
 ### Biological_data
 
