@@ -31,14 +31,14 @@ class DataConverter:
     }
 
     def __init__(self, corrected_counts_path: str, delimiter: chr, default_bin_length: int,
-                 event_length_normalizer: int, add_chromosome_ends=False):
+                 event_length_normalizer: int, add_chromosome_ends=False, neutral_cn=2.0):
         self.corrected_counts = pd.read_csv(corrected_counts_path, sep=delimiter, header=0, low_memory=False)
         self.NON_CELL_COLUMNS = 4
         self.NON_RATIO_DIFFS_COLUMNS = 3
-        self.NEUTRAL_CN = 2.0
         self.CHROMOSOME_COLUMN = 0
         self.BIN_START_COLUMN = 1
         self.LOCI_COUNT = self.corrected_counts.shape[0]
+        self.neutral_cn = neutral_cn
         self.cells = self.corrected_counts.shape[1] - self.NON_CELL_COLUMNS
         self.default_bin_length = default_bin_length
         self.event_length_normalizer = event_length_normalizer
@@ -140,7 +140,7 @@ class DataConverter:
             loci_chr = self.__get_loci_chromosome(i)
             if i == self.corrected_counts.shape[0] - 1 or loci_chr != self.__get_loci_chromosome(i + 1):
                 print(i)
-                line = np.full(self.corrected_counts.shape[1], self.NEUTRAL_CN)
+                line = np.full(self.corrected_counts.shape[1], self.neutral_cn)
                 line[self.CHROMOSOME_COLUMN] = loci_chr
                 line[self.BIN_START_COLUMN] = self.human_chr_lengths[loci_chr]
                 line[self.BIN_START_COLUMN + 1] = self.human_chr_lengths[loci_chr] + self.default_bin_length
