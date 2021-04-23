@@ -26,3 +26,13 @@ This directory contains two notebooks that present examples of CONET usage for:
 | **moves_between_swaps** | Number of MCMC moves done by each replica before swap move is attempted. | 10 |
 | **burn_in** | Number of MCMC iterations which should be skipped before statistics gathering. | 10000 |
 | **verbose** | True if CONET should print messages during inference. | True |
+
+### Most important Python classes:
+#### CONET
+
+#### CONETParameters
+
+#### DataConverter
+
+
+#### InferenceResult
