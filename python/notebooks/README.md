@@ -10,7 +10,7 @@ Use provided R script to plot inferred tree and count matrix:
 ```
 ## Usage details
 ### CONET user-defined parameters
- CONET depends on 
+ CONET depends on CONETParameters object of class 
 | Parameter name | Description | Default value |
 | ---- | -------- | --- |
 | **data_dir** | fadfs  |"./" |
