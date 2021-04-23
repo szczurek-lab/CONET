@@ -28,6 +28,9 @@ Example of input matrix for SA501X3F xenograft breast cancer data is contained i
 Apart from the corrected counts matrix CONET expects indices of breakpoint candidate loci (only pairs of loci from this set will constitute potential event set).
 Each candidate loci should be given in the form of corresponding bin's index in the corrected counts matrix (indices should start at 0).
 
+### neutral_cn (defaults to 2.0)
+Neutral copy number. 
+
 ### default_bin_width
 Number which will be used for artifical bin's corresponding to ends of chromosomes.
 
@@ -36,3 +39,5 @@ Real constant which will be used to normalize event lengths (in the notebook thi
 
 ### add_chr_ends_to_indices (True / False)
 It is recommended to add artifical chromosome ends to the set of candidate loci with neutral CN. This can either be done manually by the user by insertion of additonal bins to corrected counts matrix (add_chr_ends_to_indices=False) or automatically (add_chr_ends_to_indices=True).
+
+Option add_chr_ends_to_indices from method DataConverter.create_CoNET_input_files should be set to the same value as add_chr_ends_to_indices.
