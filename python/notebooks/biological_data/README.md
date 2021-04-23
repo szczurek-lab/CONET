@@ -41,3 +41,9 @@ Real constant which will be used to normalize event lengths (in the notebook thi
 It is recommended to add artifical chromosome ends to the set of candidate loci with neutral CN. This can either be done manually by the user by insertion of additonal bins to corrected counts matrix (add_chr_ends_to_indices=False) or automatically (add_chr_ends_to_indices=True).
 
 Option add_chr_ends_to_indices from method DataConverter.create_CoNET_input_files should be set to the same value as add_chr_ends_to_indices.
+
+
+For the user convenience DataConverter.create_CoNET_input_files allows chromosomes=[17,18, 20, 23]
+## Plotting
+Set RESULTS_DIR variable to path to directory containing inference result files.
+Set READS_DIR variable to path to directory containing corrected counts matrix.
