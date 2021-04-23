@@ -1,13 +1,13 @@
-PROG = CoNET
+PROG = CONET
 CC = g++
 CPPFLAGS = -O3 -std=c++14 -Wall -Wextra -lpthread -g
 LDFLAGS = -lpthread
-OBJS = CoNET.o logger.o parameters.o breakpoints.o csv_reader.o move_type.o
+OBJS = CONET.o logger.o parameters.o breakpoints.o csv_reader.o move_type.o
 
 $(PROG) : $(OBJS)
 	$(CC) $(LDFLAGS)  -o $(PROG) $(OBJS) -lpthread
-CoNETo:
-	$(CC) $(CPPFLAGS) -c CoNET.cpp
+CONET.o:
+	$(CC) $(CPPFLAGS) -c CONET.cpp
 parameters.o: src/parameters/parameters.h
 	$(CC) $(CPPFLAGS) -c src/parameters/parameters.cpp 
 logger.o: src/utils/logger/logger.h
