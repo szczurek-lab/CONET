@@ -5,8 +5,8 @@
  
  CONET should be used with the aid of provided Python scripts. 
  Examples and details are provided in two notebooks:
-     * python/notebooks/biological_data/biological_data.ipynb
-     * python/notebooks/synthetic_data/synthetic_data.ipynb
+ * python/notebooks/biological_data/biological_data.ipynb
+ * python/notebooks/synthetic_data/synthetic_data.ipynb
     
  
 ## Requirements
