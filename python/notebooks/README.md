@@ -13,7 +13,7 @@
 | **data_size_prior_c** | sdfdsf | 1.0 |
 | **use_event_lengths_in_attachment** | sdfdsf | True |
 | **seed** | Seed for C++ RNG | 12312 |
-| **mixture_size** | Initial number of components in difference distribution for breakpoint loci. | 4 |
+| **mixture_size** | Initial number of components in difference distribution for breakpoint loci. This value may be decreased in the course of inference but will never be increased.| 4 |
 | **num_replicas** | Number of tempered chain replicas in MAP event tree search. | 5 |
 | **threads_likelihood** | Number of threads which will be used for the most demanding likelihood calculations. | 4 |
 | **parameter_resampling_frequency** | Number of tree MCMC moves for each parameter MCMC move. | 10 |
