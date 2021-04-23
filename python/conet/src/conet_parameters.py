@@ -1,6 +1,6 @@
 
 
-class CoNETParameters:
+class CONETParameters:
     #
     # @data_dir - path to output directory
     # @param_inf_iters - number of iterations for parameters inference
