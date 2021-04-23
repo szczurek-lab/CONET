@@ -13,6 +13,7 @@
 * C++ compiler that supports C++14 standard
 * Python 3.0 or higher
 * GNU Make
+* R 4.0 or higher (for output plotting)
 ## Installation
 
 ### C++
