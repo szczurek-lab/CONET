@@ -20,8 +20,8 @@ all_reads$chr[all_reads$chr == "Y"] <- "24"
 all_reads$chr <- as.numeric(all_reads$chr)
 
 
-TREE_FILE_NAME <- paste(RESULTS_DIR, "inferred_tree")
-ATTACHMENT_FILE_NAME <- paste(RESULTS_DIR, "inferred_attachment")
+TREE_FILE_NAME <- paste(RESULTS_DIR, "inferred_tree", sep="")
+ATTACHMENT_FILE_NAME <- paste(RESULTS_DIR, "inferred_attachment", sep="")
 
 create_edges_matrix <- function() {
   edges <- read.table(TREE_FILE_NAME, sep="-", stringsAsFactors = F)

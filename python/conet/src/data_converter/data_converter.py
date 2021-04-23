@@ -81,7 +81,7 @@ class DataConverter:
             loci_chr = self.__get_loci_chromosome(loci_index)
             if loci_index == 0 or loci_chr != self.__get_loci_chromosome(loci_index - 1):
                 diffs[i, self.NON_RATIO_DIFFS_COLUMNS:diffs_columns] = self.corrected_counts.iloc[loci_index][
-                                                                       self.NON_CELL_COLUMNS:counts_size] - self.NEUTRAL_CN
+                                                                       self.NON_CELL_COLUMNS:counts_size] - self.neutral_cn
             else:
                 diffs[i, self.NON_RATIO_DIFFS_COLUMNS:diffs_columns] = \
                     self.corrected_counts.iloc[loci_index][self.NON_CELL_COLUMNS:counts_size] - \
@@ -139,7 +139,6 @@ class DataConverter:
         while i < self.corrected_counts.shape[0]:
             loci_chr = self.__get_loci_chromosome(i)
             if i == self.corrected_counts.shape[0] - 1 or loci_chr != self.__get_loci_chromosome(i + 1):
-                print(i)
                 line = np.full(self.corrected_counts.shape[1], self.neutral_cn)
                 line[self.CHROMOSOME_COLUMN] = loci_chr
                 line[self.BIN_START_COLUMN] = self.human_chr_lengths[loci_chr]
