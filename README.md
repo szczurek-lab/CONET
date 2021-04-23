@@ -1,7 +1,7 @@
 # CONET
 
 ## About
-
+ CONET is a copy number event tree inference and copy number calling bayesian procedure from whole-genome DNA sequencing data.
 ## Requirements
 
 ## Installation
