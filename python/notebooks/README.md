@@ -1,5 +1,11 @@
 # CoNET
 
+## Contents
+### Synthetic_data
+  Contains notebook for data 
+### Biological_data
+
+for SA501X3F xenograft breast cancer data
 ## Usage details
 ### CONET user-defined parameters
  CONET depends on CONETParameters object of class 
