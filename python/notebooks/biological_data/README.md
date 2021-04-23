@@ -43,7 +43,7 @@ It is recommended to add artifical chromosome ends to the set of candidate loci 
 Option add_chr_ends_to_indices from method DataConverter.create_CoNET_input_files should be set to the same value as add_chr_ends_to_indices.
 
 
-For the user convenience DataConverter.create_CoNET_input_files allows chromosomes=[17,18, 20, 23]
+For the user convenience DataConverter.create_CoNET_input_files allows passing of @chromosomes list which contains number for chromosomes for which the inference will be conducted. Note that the plotting script always outputs inferred heatmap for the whole genome, hence for chromosomes not contained in the list every bin will have neutral copy number. 
 ## Plotting
 Set RESULTS_DIR variable to path to directory containing inference result files.
 Set READS_DIR variable to path to directory containing corrected counts matrix.
