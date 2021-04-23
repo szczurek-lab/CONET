@@ -5,3 +5,5 @@ set @bin_dir variable to path to directory which contains CoNET executable
 Use provided R script to plot inferred tree and count matrix:
   -
 ```
+
+## Input Data
