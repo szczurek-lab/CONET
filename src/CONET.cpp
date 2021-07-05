@@ -42,7 +42,11 @@ void save_attachment(std::string path, std::map<size_t, std::string> loci_names,
 	std::ofstream file{ path };
 	for (size_t j = 0; j < attachment.size(); j++)
 	{
-		file << j << ";" << loci_names[attachment[j].first] << ";" << loci_names[attachment[j].second] << "\n";
+		if (attachment[j].first == 0 && attachment[j].second == 0) {
+				file << j << ";" << attachment[j].first << ";" << attachment[j].second << "\n";
+		} else {
+			file << j << ";" << loci_names[attachment[j].first] << ";" << loci_names[attachment[j].second] << "\n";
+		}
 	}
 }
 
