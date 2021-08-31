@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import networkx as nx
 
 class CountsGenerator:
     def __init__(self, cn_sampler):

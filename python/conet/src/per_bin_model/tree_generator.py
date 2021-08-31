@@ -1,5 +1,7 @@
 import numpy as np
 import random
+import networkx as nx
+from conet.src.per_bin_model.node_label import *
 
 class TreeGenerator:
     def __init__(self, cn_sampler):
