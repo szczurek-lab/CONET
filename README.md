@@ -4,9 +4,10 @@
  CONET is a copy number event tree inference and copy number calling bayesian procedure from whole-genome DNA sequencing data.
  
  CONET should be used with the aid of provided Python scripts. 
- Examples and details are provided in two notebooks:
+ Examples and details are provided in three notebooks:
  * python/notebooks/biological_data/biological_data.ipynb
- * python/notebooks/synthetic_data/synthetic_data.ipynb
+ * python/notebooks/per_bin_generative_model/generative_model.ipynb
+ * python/notebooks/per_breakpoint_generative_model/generative_model.ipynb
     
  
 ## Requirements
