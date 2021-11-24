@@ -84,7 +84,7 @@ extern int NUMBER_OF_MOVES_BETWEEN_SWAPS;
 **/
 
 
-const int PARAMETERS_COUNT = 16;
+const int PARAMETERS_COUNT = 17;
 
 std::tuple<std::string, size_t, size_t> read_parameters(char **argv) {
 	std::string data_dir{ argv[1] };
@@ -107,6 +107,7 @@ std::tuple<std::string, size_t, size_t> read_parameters(char **argv) {
 
 	BURNIN = (size_t)std::stoi(argv[14]);
     VERBOSE = std::stoi(argv[15]);
+    NEUTRAL_CN = std::stod(argv[16]);
 	return make_tuple(data_dir, iterations_parameters, iterations_pt);
 }
 

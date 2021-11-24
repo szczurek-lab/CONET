@@ -26,7 +26,8 @@ class CONETParameters:
                  parameter_resampling_frequency=10,
                  moves_between_swaps=10,
                  burn_in=10000,
-                 verbose=True
+                 verbose=True,
+                 neutral_cn=2.0
                  ):
         self.data_dir = data_dir
         self.param_inf_iters = param_inf_iters
@@ -43,9 +44,9 @@ class CONETParameters:
         self.moves_between_swaps = moves_between_swaps
         self.burn_in = burn_in
         self.verbose = (lambda x: 1 if x else 0)(verbose)
+        self.neutral_cn = neutral_cn
 
     def to_string(self):
-        sep = ' '
         return [
             str(self.data_dir),
             str(self.param_inf_iters),
@@ -61,4 +62,5 @@ class CONETParameters:
             str(self.parameter_resampling_frequency),
             str(self.moves_between_swaps),
             str(self.burn_in),
-            str(self.verbose)]
+            str(self.verbose),
+            str(self.neutral_cn)]

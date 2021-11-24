@@ -68,7 +68,7 @@ public:
 				auto counts_sum = region_to_sums[reg.first];
 				Real_t mean_count = reg.second / region_to_bins[reg.first];
 				result += (square_sum - 2 * mean_count * counts_sum) / (all_bins_count)+mean_count * mean_count * bin_count / all_bins_count;
-				if (mean_count >= 1.5 && mean_count < 2.5) {
+				if (mean_count >= NEUTRAL_CN - 0.5 && mean_count < NEUTRAL_CN + 0.5) {
 					result += bin_count / all_bins_count;
 				}
 			}
@@ -127,7 +127,7 @@ public:
 				}
 			}
 		}
-		Real_t mean_count = 2.0;
+		Real_t mean_count = NEUTRAL_CN;
 		Real_t result = (square_sum - 2 * mean_count * counts_sum) / all_bins_count + mean_count * mean_count * bin_count / all_bins_count;
         if (bin_count == 0) {
             return 0.0;

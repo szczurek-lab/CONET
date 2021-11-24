@@ -19,4 +19,5 @@ extern size_t MIXTURE_SIZE;
 extern long SEED;
 extern size_t BURNIN;
 extern bool VERBOSE;
+extern double NEUTRAL_CN;
 #endif // !PARAMETERS_H

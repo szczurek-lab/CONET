@@ -12,3 +12,4 @@ size_t MIXTURE_SIZE = 8;
 long SEED = 12312414;
 size_t BURNIN = 100000;
 bool VERBOSE = false;
+double NEUTRAL_CN = 2;
