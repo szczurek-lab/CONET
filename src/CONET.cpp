@@ -38,14 +38,24 @@ void save_hmm_matrix(std::string path, PointerTree &tree, std::vector<Breakpoint
     }
 }
 
-void save_attachment(std::string path, std::map<size_t, std::string> loci_names, std::vector<BreakpointPair> attachment) {
+void save_attachment(std::string data_path, std::string path, std::map<size_t, std::string> loci_names, std::vector<BreakpointPair> attachment) {
+
+	std::ifstream in(data_path.append("cell_names"));
+	std::string str;
+	std::vector<std::string> cells;
+	while (std::getline(in, str))
+	{
+	    if(str.size() > 0)
+		cells.push_back(str);
+	}
+	
 	std::ofstream file{ path };
 	for (size_t j = 0; j < attachment.size(); j++)
 	{
 		if (attachment[j].first == 0 && attachment[j].second == 0) {
-				file << j << ";" << attachment[j].first << ";" << attachment[j].second << "\n";
+				file << cells[j] << ";" << j << ";" << attachment[j].first << ";" << attachment[j].second << "\n";
 		} else {
-			file << j << ";" << loci_names[attachment[j].first] << ";" << loci_names[attachment[j].second] << "\n";
+			file << cells[j] << ";" << j << ";" << loci_names[attachment[j].first] << ";" << loci_names[attachment[j].second] << "\n";
 		}
 	}
 }
@@ -84,9 +94,9 @@ extern int NUMBER_OF_MOVES_BETWEEN_SWAPS;
 **/
 
 
-const int PARAMETERS_COUNT = 17;
+const int PARAMETERS_COUNT = 18;
 
-std::tuple<std::string, size_t, size_t> read_parameters(char **argv) {
+std::tuple<std::string, size_t, size_t, std::string> read_parameters(char **argv) {
 	std::string data_dir{ argv[1] };
 	size_t iterations_parameters = (size_t) std::stoi(argv[2]);
 	size_t iterations_pt = (size_t)std::stoi(argv[3]);
@@ -108,7 +118,13 @@ std::tuple<std::string, size_t, size_t> read_parameters(char **argv) {
 	BURNIN = (size_t)std::stoi(argv[14]);
     VERBOSE = std::stoi(argv[15]);
     NEUTRAL_CN = std::stod(argv[16]);
-	return make_tuple(data_dir, iterations_parameters, iterations_pt);
+    std::string output_dir{ argv[17] };
+    
+    if(data_dir.back() != '/')
+    	data_dir.push_back('/');
+    if(output_dir.back() != '/')
+    	output_dir.push_back('/');
+    return make_tuple(data_dir, iterations_parameters, iterations_pt, output_dir);
 }
 
 int main(int argc, char **argv)
@@ -121,7 +137,8 @@ int main(int argc, char **argv)
 	
 	auto parameters = read_parameters(argv);
 	auto data_dir = get<0>(parameters);
-	std::ofstream tree_file{ string(data_dir).append("inferred_tree") };
+	auto output_dir = get<3>(parameters);
+	std::ofstream tree_file{ string(output_dir).append("inferred_tree") };
 
 	Random<double> random(SEED);
     VectorCellProvider<double> provider = readFile(string(data_dir).append("ratios"), string(data_dir).append("counts"), string(data_dir).append("counts_squared"), ';', COUNTS_SCORE_CONSTANT != 0.0);
@@ -134,9 +151,9 @@ int main(int argc, char **argv)
 	PointerTree inferred_tree = std::get<0>(std::get<0>(result));
 	tree_file << inferred_tree.toString(provider.get_loci_to_name());
 
-    save_hmm_matrix(string(data_dir).append("inferred_breakpoints"), get<0>(get<0>(result)), get<1>(get<0>(result)), provider.getLociCount());
-    save_edge_confidence(string(data_dir).append("edge_confidence"), std::get<0>(get<0>(result)), std::get<3>(result), provider.get_loci_to_name());
-	save_attachment(string(data_dir).append("inferred_attachment"), provider.get_loci_to_name(), std::get<1>(get<0>(result)));
-    save_parameters(string(data_dir).append("inferred_distribution"), get<4>(result));
+    save_hmm_matrix(string(output_dir).append("inferred_breakpoints"), get<0>(get<0>(result)), get<1>(get<0>(result)), provider.getLociCount());
+    save_edge_confidence(string(output_dir).append("edge_confidence"), std::get<0>(get<0>(result)), std::get<3>(result), provider.get_loci_to_name());
+    save_attachment(data_dir, string(output_dir).append("inferred_attachment"), provider.get_loci_to_name(), std::get<1>(get<0>(result)));
+    save_parameters(string(output_dir).append("inferred_distribution"), get<4>(result));
     return 0;
 }

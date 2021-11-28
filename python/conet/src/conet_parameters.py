@@ -27,7 +27,8 @@ class CONETParameters:
                  moves_between_swaps=10,
                  burn_in=10000,
                  verbose=True,
-                 neutral_cn=2.0
+                 neutral_cn=2.0,
+                 output_dir="./"
                  ):
         self.data_dir = data_dir
         self.param_inf_iters = param_inf_iters
@@ -45,6 +46,7 @@ class CONETParameters:
         self.burn_in = burn_in
         self.verbose = (lambda x: 1 if x else 0)(verbose)
         self.neutral_cn = neutral_cn
+        self.output_dir = output_dir
 
     def to_string(self):
         return [
@@ -63,4 +65,5 @@ class CONETParameters:
             str(self.moves_between_swaps),
             str(self.burn_in),
             str(self.verbose),
-            str(self.neutral_cn)]
+            str(self.neutral_cn),
+            str(self.output_dir)]

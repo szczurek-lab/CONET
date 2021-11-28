@@ -33,7 +33,7 @@ class DataConverter:
     def __init__(self, corrected_counts_path: str, delimiter: chr, default_bin_length: int,
                  event_length_normalizer: int, add_chromosome_ends=False, neutral_cn=2.0):
         self.corrected_counts = pd.read_csv(corrected_counts_path, sep=delimiter, header=0, low_memory=False)
-        self.NON_CELL_COLUMNS = 4
+        self.NON_CELL_COLUMNS = 5
         self.NON_RATIO_DIFFS_COLUMNS = 3
         self.CHROMOSOME_COLUMN = 0
         self.BIN_START_COLUMN = 1
@@ -42,18 +42,27 @@ class DataConverter:
         self.cells = self.corrected_counts.shape[1] - self.NON_CELL_COLUMNS
         self.default_bin_length = default_bin_length
         self.event_length_normalizer = event_length_normalizer
+        loci_candidate_indices = []
+        for i in range(0, self.corrected_counts.shape[0]):
+        	if self.corrected_counts.iloc[i,4] == 1:
+        		loci_candidate_indices.append(i)
+        self.loci_candidate_indices = loci_candidate_indices
         if add_chromosome_ends:
             self.__add_chromosome_ends()
 
     # indices must be numbered from 0
-    def create_CoNET_input_files(self, loci_candidate_indices: list, out_path: str, add_chr_ends_to_indices=False, chromosomes=None):
+    def create_CoNET_input_files(self, out_path: str, add_chr_ends_to_indices=False, chromosomes=None):
         if add_chr_ends_to_indices:
-            loci_candidate_indices = self.__add_chromosome_ends_to_indices(loci_candidate_indices)
+            self.loci_candidate_indices = self.__add_chromosome_ends_to_indices(self.loci_candidate_indices)
         if chromosomes is not None:
-            loci_candidate_indices = self.__filter_loci_to_chromosomes(loci_candidate_indices, chromosomes)
+            self.loci_candidate_indices = self.__filter_loci_to_chromosomes(self.loci_candidate_indices, chromosomes)
 
-        diffs = self.__create_diff_matrix(loci_candidate_indices)
-        counts, squared_counts = self.__create_sum_and_squared_counts_matrices(loci_candidate_indices)
+        diffs = self.__create_diff_matrix(self.loci_candidate_indices)
+        counts, squared_counts = self.__create_sum_and_squared_counts_matrices(self.loci_candidate_indices)
+        
+        
+        with open(out_path + "cell_names", "w") as outfile:
+    	    outfile.write("\n".join(list(self.corrected_counts.columns.values.tolist())[self.NON_CELL_COLUMNS:]))
         np.savetxt(out_path + "ratios", diffs, delimiter=";", fmt='%.6f')
         np.savetxt(out_path + "counts", counts, delimiter=";", fmt='%.6f')
         np.savetxt(out_path + "counts_squared", squared_counts, delimiter=";", fmt='%.6f')
