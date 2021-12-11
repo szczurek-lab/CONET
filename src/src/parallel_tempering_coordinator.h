@@ -133,7 +133,7 @@ private:
                 log("State after " , i*NUMBER_OF_MOVES_BETWEEN_SWAPS, " iterations:");
                 log("Tree size: ", this->tree_sampling_coordinators[0]->tree->getSize());
                 log("Log-likelihood: ", this->likelihood_calculators[0]->getLikelihood());
-                log("Log-likelihood with penalty: ", this->likelihood_calculators[0]->getLikelihood() + this->tree_sampling_coordinators[0]->getLogTreePrior() + COUNTS_SCORE_CONSTANT*this->tree_sampling_coordinators[0]->tree_count_score);
+                log("Log-likelihood with penalty: ", this->likelihood_calculators[0]->getLikelihood() + this->tree_sampling_coordinators[0]->getLogTreePrior() + this->tree_sampling_coordinators[0]->tree_count_score);
                 
             }
 		}

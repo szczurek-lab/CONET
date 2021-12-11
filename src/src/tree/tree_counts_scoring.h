@@ -67,9 +67,9 @@ public:
 				auto square_sum = region_to_squares[reg.first];
 				auto counts_sum = region_to_sums[reg.first];
 				Real_t mean_count = reg.second / region_to_bins[reg.first];
-				result += (square_sum - 2 * mean_count * counts_sum) / (all_bins_count)+mean_count * mean_count * bin_count / all_bins_count;
+				result += COUNTS_SCORE_CONSTANT_0 * ((square_sum - 2 * mean_count * counts_sum) / (all_bins_count)+mean_count * mean_count * bin_count / all_bins_count);
 				if (mean_count >= NEUTRAL_CN - 0.5 && mean_count < NEUTRAL_CN + 0.5) {
-					result += bin_count / all_bins_count;
+					result += COUNTS_SCORE_CONSTANT_1 * bin_count / all_bins_count;
 				}
 			}
 		}
@@ -133,7 +133,7 @@ public:
             return 0.0;
             tree_size --;
         }
-		return result;
+		return COUNTS_SCORE_CONSTANT_1 * result;
 	}
 
 	void refresh_used() {
@@ -167,7 +167,7 @@ public:
 	}
 
 	Real_t calculate_log_score(PointerTree &tree, std::vector<BreakpointPair> &attachment_vec) {
-		if (COUNTS_SCORE_CONSTANT == 0.0) {
+		if (COUNTS_SCORE_CONSTANT_0 == 0.0 && COUNTS_SCORE_CONSTANT_1 == 0) {
 			return 0.0;
 		}
 		refresh_used();

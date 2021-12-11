@@ -94,7 +94,7 @@ extern int NUMBER_OF_MOVES_BETWEEN_SWAPS;
 **/
 
 
-const int PARAMETERS_COUNT = 18;
+const int PARAMETERS_COUNT = 19;
 
 std::tuple<std::string, size_t, size_t, std::string> read_parameters(char **argv) {
 	std::string data_dir{ argv[1] };
@@ -102,23 +102,24 @@ std::tuple<std::string, size_t, size_t, std::string> read_parameters(char **argv
 	size_t iterations_pt = (size_t)std::stoi(argv[3]);
 	
 	
-	COUNTS_SCORE_CONSTANT = std::stod(argv[4]);
-	EVENTS_LENGTH_PENALTY = std::stod(argv[5]);
-	DATA_SIZE_PRIOR_CONSTANT = std::stod(argv[6]);
-	USE_EVENT_LENGTHS_IN_ATTACHMENT = std::stoi(argv[7]);
+	COUNTS_SCORE_CONSTANT_0 = std::stod(argv[4]);
+	COUNTS_SCORE_CONSTANT_1 = std::stod(argv[5]);
+	EVENTS_LENGTH_PENALTY = std::stod(argv[6]);
+	DATA_SIZE_PRIOR_CONSTANT = std::stod(argv[7]);
+	USE_EVENT_LENGTHS_IN_ATTACHMENT = std::stoi(argv[8]);
 	
-	SEED = std::stol(argv[8]);
-	MIXTURE_SIZE = (size_t) std::stoi(argv[9]);
+	SEED = std::stol(argv[9]);
+	MIXTURE_SIZE = (size_t) std::stoi(argv[10]);
 
-	THREADS_NUM = (size_t) std::stoi(argv[10]);
-	THREADS_LIKELIHOOD = (size_t)std::stoi(argv[11]);
-	PARAMETER_RESAMPLING_FREQUENCY = (size_t)std::stoi(argv[12]);
-	NUMBER_OF_MOVES_BETWEEN_SWAPS = (size_t)std::stoi(argv[13]);
+	THREADS_NUM = (size_t) std::stoi(argv[11]);
+	THREADS_LIKELIHOOD = (size_t)std::stoi(argv[12]);
+	PARAMETER_RESAMPLING_FREQUENCY = (size_t)std::stoi(argv[13]);
+	NUMBER_OF_MOVES_BETWEEN_SWAPS = (size_t)std::stoi(argv[14]);
 
-	BURNIN = (size_t)std::stoi(argv[14]);
-    VERBOSE = std::stoi(argv[15]);
-    NEUTRAL_CN = std::stod(argv[16]);
-    std::string output_dir{ argv[17] };
+	BURNIN = (size_t)std::stoi(argv[15]);
+    VERBOSE = std::stoi(argv[16]);
+    NEUTRAL_CN = std::stod(argv[17]);
+    std::string output_dir{ argv[18] };
     
     if(data_dir.back() != '/')
     	data_dir.push_back('/');
@@ -141,7 +142,7 @@ int main(int argc, char **argv)
 	std::ofstream tree_file{ string(output_dir).append("inferred_tree") };
 
 	Random<double> random(SEED);
-    VectorCellProvider<double> provider = readFile(string(data_dir).append("ratios"), string(data_dir).append("counts"), string(data_dir).append("counts_squared"), ';', COUNTS_SCORE_CONSTANT != 0.0);
+    VectorCellProvider<double> provider = readFile(string(data_dir).append("ratios"), string(data_dir).append("counts"), string(data_dir).append("counts_squared"), ';', COUNTS_SCORE_CONSTANT_0 != 0.0 && COUNTS_SCORE_CONSTANT_1 != 0.0);
     
     log("Input files have been loaded succesfully");
     ParallelTemperingCoordinator<double> PT(provider, random);

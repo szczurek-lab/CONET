@@ -15,7 +15,8 @@ class CONETParameters:
                  data_dir="./",
                  param_inf_iters=100000,
                  pt_inf_iters=100000,
-                 counts_penalty_c=0.0,
+                 counts_penalty_c_0=0.0,
+                 counts_penalty_c_1=0.0,
                  event_length_penalty_c=1.0,
                  data_size_prior_c=1.0,
                  use_event_lengths_in_attachment=True,
@@ -33,7 +34,8 @@ class CONETParameters:
         self.data_dir = data_dir
         self.param_inf_iters = param_inf_iters
         self.pt_inf_iters = pt_inf_iters
-        self.counts_penalty_c = counts_penalty_c
+        self.counts_penalty_c_0 = counts_penalty_c_0
+        self.counts_penalty_c_1 = counts_penalty_c_1
         self.event_length_penalty_c = event_length_penalty_c
         self.data_size_prior_c = data_size_prior_c
         self.use_event_lengths_in_attachment = (lambda x: 1 if x else 0)(use_event_lengths_in_attachment)
@@ -53,7 +55,8 @@ class CONETParameters:
             str(self.data_dir),
             str(self.param_inf_iters),
             str(self.pt_inf_iters),
-            str(self.counts_penalty_c),
+            str(self.counts_penalty_c_0),
+            str(self.counts_penalty_c_1),
             str(self.event_length_penalty_c),
             str(self.data_size_prior_c),
             str(self.use_event_lengths_in_attachment),

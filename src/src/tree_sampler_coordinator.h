@@ -413,7 +413,7 @@ public:
 
 		Real_t logAcceptance = 
 			afterMoveLikelihood - beforeMoveLikelihood 
-			+ COUNTS_SCORE_CONSTANT * (after_move_counts_score - tree_count_score)
+			+ (after_move_counts_score - tree_count_score)
 			- std::get<1>(moveData) + std::get<2>(moveData) 
 			- std::log(getPriorOfReverseMove(type)) + std::log(moveProbability[type]) 
 			+ getLogTreePrior() - beforeMoveTreePrior;
@@ -458,7 +458,7 @@ tree{ tree },
 		likelihoodCalculator{ lC }, 
 		vertexSet{ VertexSetNamespace::create<Real_t>(maxBrkp, cells->getChromosomeMarkers(), seed) },
 				cells{ cells },
-						countsScoring{ cells , COUNTS_SCORE_CONSTANT !=0.0 },
+						countsScoring{ cells , COUNTS_SCORE_CONSTANT_0 !=0.0 && COUNTS_SCORE_CONSTANT_1 != 0.0 },
 		random{ seed }, 
 		moveProbability{ moveProbability },
 		pid{ pid }  {
@@ -485,7 +485,7 @@ tree{ tree },
 	}
     
     Real_t get_total_likelihood() {
-return likelihoodCalculator->getLikelihood() +getLogTreePrior(false) + COUNTS_SCORE_CONSTANT*tree_count_score;
+return likelihoodCalculator->getLikelihood() +getLogTreePrior(false) + tree_count_score;
 
     }
 	Real_t get_temperature() const
@@ -518,12 +518,12 @@ return likelihoodCalculator->getLikelihood() +getLogTreePrior(false) + COUNTS_SC
 		if (moveCount == 0) {
 			bestTree = *tree;
 			bestLikelihoodNoPrior = likelihoodCalculator->getLikelihood();
-			bestLikelihood = likelihoodCalculator->getLikelihood() +getLogTreePrior() + COUNTS_SCORE_CONSTANT*tree_count_score;
+			bestLikelihood = likelihoodCalculator->getLikelihood() +getLogTreePrior() + tree_count_score;
 			bestTreeAttachment = likelihoodCalculator->getBestAttachment();
             best_counts_score = tree_count_score;
 		}
 		else {
-			auto l = likelihoodCalculator->getLikelihood() +getLogTreePrior()+ COUNTS_SCORE_CONSTANT*tree_count_score;
+			auto l = likelihoodCalculator->getLikelihood() +getLogTreePrior()+ tree_count_score;
 			if (l > bestLikelihood) {
 				bestTree = *tree;
 				bestLikelihood = l;

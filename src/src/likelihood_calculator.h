@@ -233,7 +233,7 @@ public:
 	LikelihoodCalculator(NormalMixtureLikelihood<Real_t> *lk, PointerTree *tree,
 		VectorCellProvider<Real_t> *cells, size_t maxBreakpoint, unsigned int seed) : likelihood{ lk }, tree{ tree }
 		, cells{ cells }, maxBreakpoint{ maxBreakpoint }, random{ seed }, attachment{ cells->getCellsCount() }, tmp_attachment{ cells->getCellsCount() },
-		counts_scoring{ cells , COUNTS_SCORE_CONSTANT != 0.0} {
+		counts_scoring{ cells , COUNTS_SCORE_CONSTANT_0 != 0.0 && COUNTS_SCORE_CONSTANT_1 != 0.0} {
 		likelihood_result.resize(cells->getCellsCount());
 		tmp_likelihood_accumulator.resize(cells->getCellsCount());
 		rootLikelihoods.resize(cells->getCellsCount());
@@ -302,7 +302,7 @@ public:
 
 		Real_t acceptanceRatio = likelihoodAfterChange + priorAfterChange  - likelihoodBeforeChange - priorBeforeChange 
 			+ logKernels.second - logKernels.first
-			+ COUNTS_SCORE_CONSTANT * (counts_score_after_move - tree_count_score);
+			+ (counts_score_after_move - tree_count_score);
 		if (DEBUG) {
 			logDebug("Parameters acceptance ratio equal to ", std::to_string(acceptanceRatio));
 			logDebug("Likelihood before change: ", std::to_string(likelihoodBeforeChange));
