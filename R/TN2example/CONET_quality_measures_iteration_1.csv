@@ -1,0 +1,13 @@
+"","x"
+"no of bin clusters",292
+"no of edges",163
+"avg GI inside",0.0926267742234499
+"avg Ent inside",0.323074997084945
+"avg_bin_cluster_support",0.758122471369249
+"perc_bin_clusters_with_at_least_0_7_support",0.568493150684932
+"avg GI outside",0.102663658017599
+"avg Ent outside",0.465860641145819
+"TP-CNR",0.910325139275143
+"FP-CNR",0.426990573419278
+"CNCC-RMSE",0.583330980371518
+"perc_bin_clusters_neutral_CN",0.0753424657534247
