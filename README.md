@@ -5,7 +5,7 @@
 #### Authors:
 Magda Markowska, Tomasz Cąkała, Błażej Miasojedow, Bogac Aybey, Dilafruz Juraeva, Johanna Mazur, Edith Ross, Eike Staub and Ewa Szczurek
 #### Questions about C++ and python implementation
-Tomasz Cąkała, tc360950@students.mimuw.edu.pl
+Tomasz Cąkała, tc360950@gmail.com
 #### Questions about R implementation and general questions
 Magda Markowska, magda.markowska@gmail.com
 #### Manuscript's corresponding author:
