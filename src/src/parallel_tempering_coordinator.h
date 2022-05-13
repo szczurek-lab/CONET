@@ -12,14 +12,14 @@
 #include "cell_provider/vector_cell_provider.h"
 #include "likelihood/implementations/utils/gaussian_mixture.h"
 #include "moves/move_type.h"
-#include "utils/tree_sampler.h"
+#include "tree/tree_sampler.h"
 #include "tree_sampler_coordinator.h"
 #include "likelihood/implementations/normal_mixture_likelihood.h"
 #include "likelihood_calculator.h"
 #include "utils/random.h"
 #include "EM_estimator.h"
 #include "utils/logger/logger.h"
-#include "utils/adaptive_pt.h"
+#include "./adaptive_pt.h"
 #include "parameters/parameters.h"
 
 template <class Real_t> class ParallelTemperingCoordinator {
@@ -38,7 +38,7 @@ private:
 			{SWAP_ONE_BREAKPOINT, 30.0}
 	};
 
-	std::vector<PointerTree> trees;
+	std::vector<EventTree> trees;
 	std::vector<TreeSamplerCoordinator<Real_t>*> tree_sampling_coordinators;
 	std::vector<LikelihoodCalculator<Real_t>*> likelihood_calculators;
 
@@ -48,13 +48,10 @@ private:
 	std::mutex m_mutex;
 	std::atomic<int> finished_mcmc_step{ 0 };
 	
-	PointerTree sample_tree(unsigned int seed)
+	EventTree sample_tree2(unsigned int seed)
 	{
-		PointerTree tree;
-		VertexSet<double> vertexSet {provider.getLociCount() - 1, provider.getChromosomeMarkers(), seed};
-		sampleTree<double>(tree, &vertexSet, seed);
-		tree.init();
-		return tree;
+		VertexLabelSampler<double> vertexSet {provider.getLociCount() - 1, provider.getChromosomeMarkers()};
+		return sample_tree<double>(5, vertexSet, random);
 	}
 
 
@@ -65,12 +62,11 @@ private:
 		tree_sampling_coordinators.reserve(THREADS_NUM);
 		for (size_t i = 0; i < THREADS_NUM; i++)
 		{
-			PointerTree tree = sample_tree(random.nextInt());
+			EventTree tree = sample_tree2(random.nextInt());
 			trees.push_back(tree);
 		}
 		for (size_t i = 0; i < THREADS_NUM; i++)
 		{
-			trees[i].init();
 			likelihood_calculators.emplace_back(new LikelihoodCalculator<Real_t>(likelihood, &trees[i], &provider, provider.getLociCount() - 1, random.nextInt()));
 		}
 		for (size_t i = 0; i < THREADS_NUM; i++)
@@ -92,7 +88,7 @@ private:
 	std::tuple<Gauss::GaussianMixture<Real_t>, Gauss::Gaussian<Real_t>, Real_t> estimateParameters(Gauss::GaussianMixture<Real_t> mixture, Gauss::Gaussian<Real_t> no_breakpoint, const size_t iterations)
 	{
 		log("Starting parameter estimation");
-		PointerTree tree = sample_tree(random.nextInt());
+		EventTree tree = sample_tree2(random.nextInt());
 		NormalMixtureLikelihood<Real_t> likelihood(no_breakpoint, mixture, random.nextInt());
 		LikelihoodCalculator<Real_t> calc(&likelihood, &tree, &provider, provider.getLociCount() - 1, random.nextInt());
 		TreeSamplerCoordinator<Real_t> coordinator(&tree, &calc, random.nextInt(), provider.getLociCount() - 1, &provider, moveProbability, false);
@@ -131,7 +127,7 @@ private:
             
             if (VERBOSE && i % 1000 == 0) {
                 log("State after " , i*NUMBER_OF_MOVES_BETWEEN_SWAPS, " iterations:");
-                log("Tree size: ", this->tree_sampling_coordinators[0]->tree->getSize());
+                log("Tree size: ", this->tree_sampling_coordinators[0]->tree->get_size());
                 log("Log-likelihood: ", this->likelihood_calculators[0]->getLikelihood());
                 log("Log-likelihood with penalty: ", this->likelihood_calculators[0]->getLikelihood() + this->tree_sampling_coordinators[0]->getLogTreePrior() + this->tree_sampling_coordinators[0]->tree_count_score);
                 
@@ -205,7 +201,7 @@ private:
 		return std::make_pair(mixture, gaussian);
 	}
 
-	std::tuple<PointerTree, std::vector<BreakpointPair>, double> choose_best_tree()
+	std::tuple<EventTree, std::vector<Event>, double> choose_best_tree()
 	{
 		auto best = tree_sampling_coordinators[0]->getBestTreeData();
 		for (size_t i = 1 ; i < tree_sampling_coordinators.size(); i++)
@@ -226,7 +222,7 @@ public:
 	{}
 
 
-std::tuple<std::tuple<PointerTree, std::vector<BreakpointPair>, Real_t>, std::string, Real_t, std::map<std::pair<BreakpointPair, BreakpointPair>, size_t>,NormalMixtureLikelihood<Real_t>> simulate(size_t iterations_parameters, size_t iterations_pt)
+std::tuple<std::tuple<EventTree, std::vector<Event>, Real_t>, std::string, Real_t, std::map<std::pair<Event, Event>, size_t>,NormalMixtureLikelihood<Real_t>> simulate(size_t iterations_parameters, size_t iterations_pt)
 	{
 		auto parameters = prepare_starting_parameters();
 		auto parameters_MAP = estimateParameters(parameters.first, parameters.second, iterations_parameters);

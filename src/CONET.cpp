@@ -4,28 +4,31 @@
 #include <tuple>
 #include <chrono>
 
-#include "src/tree/pointer_tree.h"
+#include "src/tree/event_tree.h"
 #include "src/cell_provider/csv_reader/csv_reader.h"
 #include "src/tree_sampler_coordinator.h"
 #include "src/utils/random.h"
 #include "src/likelihood/implementations/utils/csv_reader.h"
 #include "src/parallel_tempering_coordinator.h"
+#include "src/tree/tree_formatter.h"
 
 using namespace std;
 
-using NodeHandle = PointerTree::NodeHandle;
+using NodeHandle = EventTree::NodeHandle;
 
-void save_hmm_matrix(std::string path, PointerTree &tree, std::vector<BreakpointPair> attachment, size_t no_of_loci) {
+/*void save_hmm_matrix(std::string path, EventTree &tree, std::vector<Event> attachment, size_t no_of_loci) {
 	std::ofstream file{ path };
-    std::vector<NodeHandle> nodes = tree.getNodes();
-	std::map<BreakpointPair, NodeHandle> breakpoint_to_node;
+    std::vector<NodeHandle> nodes = tree.get_descendants(tree.get_root());
+	std::map<Event, NodeHandle> breakpoint_to_node;
     std::map<NodeHandle, std::set<size_t>> ancestors;
 
 	for (auto node : nodes) {
-		breakpoint_to_node[tree.getNodeBreakpoints(node)] = node;
-		std::unordered_set<size_t> breakpoints;
-		tree.gatherAncestorsBreakpoints(node, breakpoints);
-		ancestors[node] = std::set<size_t>(breakpoints.begin(), breakpoints.end());
+		if (node != tree.get_root()) {
+			breakpoint_to_node[tree.get_node_event(node)] = node;
+			std::unordered_set<size_t> breakpoints;
+			tree.gather_ancestor_breakpoints(node, breakpoints);
+			ancestors[node] = std::set<size_t>(breakpoints.begin(), breakpoints.end());
+		}
 	}
 
     for (size_t c = 0; c < attachment.size(); c++) {
@@ -36,9 +39,9 @@ void save_hmm_matrix(std::string path, PointerTree &tree, std::vector<Breakpoint
 			file << value << separator;
         }
     }
-}
+}*/
 
-void save_attachment(std::string data_path, std::string path, std::map<size_t, std::string> loci_names, std::vector<BreakpointPair> attachment) {
+void save_attachment(std::string data_path, std::string path, std::vector<Event> attachment) {
 
 	std::ifstream in(data_path.append("cell_names"));
 	std::string str;
@@ -52,22 +55,10 @@ void save_attachment(std::string data_path, std::string path, std::map<size_t, s
 	std::ofstream file{ path };
 	for (size_t j = 0; j < attachment.size(); j++)
 	{
-		if (attachment[j].first == 0 && attachment[j].second == 0) {
 				file << cells[j] << ";" << j << ";" << attachment[j].first << ";" << attachment[j].second << "\n";
-		} else {
-			file << cells[j] << ";" << j << ";" << loci_names[attachment[j].first] << ";" << loci_names[attachment[j].second] << "\n";
-		}
 	}
 }
 
-void save_edge_confidence(std::string path, PointerTree &tree, std::map<std::pair<BreakpointPair, BreakpointPair>, size_t> &edge_count, std::map<size_t, std::string> loci_to_name) {
-	std::ofstream file{ path };
-    auto edges = tree.gatherEdges();
-
-	for (auto edge : edges) {
-		file << tree.get_node_label(edge.first, loci_to_name) << ";" << tree.get_node_label(edge.second, loci_to_name) << ";" << edge_count[edge] << " \n";
-    }
-}
 
 void save_parameters(string path, NormalMixtureLikelihood<double> likelihood) {
     std::ofstream file{ path };
@@ -149,12 +140,11 @@ int main(int argc, char **argv)
 	auto result = PT.simulate(get<1>(parameters), get<2>(parameters));
 	log("Tree inference has finished");
 
-	PointerTree inferred_tree = std::get<0>(std::get<0>(result));
-	tree_file << inferred_tree.toString(provider.get_loci_to_name());
+	EventTree inferred_tree = std::get<0>(std::get<0>(result));
+	tree_file << TreeFormatter::to_string_representation(inferred_tree);
 
-    save_hmm_matrix(string(output_dir).append("inferred_breakpoints"), get<0>(get<0>(result)), get<1>(get<0>(result)), provider.getLociCount());
-    save_edge_confidence(string(output_dir).append("edge_confidence"), std::get<0>(get<0>(result)), std::get<3>(result), provider.get_loci_to_name());
-    save_attachment(data_dir, string(output_dir).append("inferred_attachment"), provider.get_loci_to_name(), std::get<1>(get<0>(result)));
+    //save_hmm_matrix(string(output_dir).append("inferred_breakpoints"), get<0>(get<0>(result)), get<1>(get<0>(result)), provider.getLociCount());
+    save_attachment(data_dir, string(output_dir).append("inferred_attachment"), std::get<1>(get<0>(result)));
     save_parameters(string(output_dir).append("inferred_distribution"), get<4>(result));
     return 0;
 }

@@ -1,7 +1,7 @@
 #ifndef MOVE_DATA_H
 #define MOVE_DATA_H
 
-#include "../tree/pointer_tree.h"
+#include "../tree/event_tree.h"
 /**
 * Keeps data about move.
 * This is a simple struct which stores data allowing roll-back of any move. 
@@ -11,12 +11,11 @@
 * if and only if roots of swapped trees have been in parent - descendant relation.
 */
 struct MoveData {
-	using NodeHandle_ = PointerTree::NodeHandle;
+	using NodeHandle_ = EventTree::NodeHandle;
 	NodeHandle_ oldParent;
 	NodeHandle_ node1;
 	NodeHandle_ node2;
-	size_t oldLeftBrkp;
-	size_t oldRightBrkp;
+	TreeLabel old_label;
 	bool simpleSwap;
 };
  

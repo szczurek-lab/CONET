@@ -3,18 +3,18 @@
 #include <vector>
 #include <map>
 
-#include "../utils/breakpoints/breakpoints.h"
+#include "../types.h"
 
 /**
 * Container for cell data
 * Stores 2D matrix of cell data - [i,j] indices 
-* corresponds to i-th log loci count of j-th cell
+* corresponds to i-th loci count of j-th cell
 */
 template <class Real_t> class VectorCellProvider {
 private:
-	const size_t lociCount;
-	size_t cellCount{ 0 };
-	std::vector<std::vector<Real_t>> cells{ lociCount };
+	const size_t loci_count;
+	size_t cell_count{ 0 };
+	std::vector<std::vector<Real_t>> cells{ loci_count };
 	/**
 	* For pair of breakpoints (br1, br2) length of event (br1, br2) 
 	* is equal to eventLengths[br1] - eventLengths[br2]
@@ -22,11 +22,10 @@ private:
     
     std::vector<Real_t> betweenBinsLengths;
 	/**
-	* Contains forst breakpoitn from each chromosome (expcept for the forst one) ad lociCount as a last element;
+	* Contains forst breakpoitn from each chromosome (expcept for the forst one) ad loci_count as a last element;
 	*/
-	std::vector<size_t> chromosomeMarkers;
+	std::vector<size_t> chromosome_markers;
 
-	std::map<size_t, std::string> loci_to_name_map;
 
 	/* Classes for additional likelihood */
 	std::vector<Real_t> counts_scores_lengths;
@@ -34,11 +33,14 @@ private:
 	std::vector<std::vector<Real_t>> squared_counts;
 public:
 
-	VectorCellProvider(size_t lociCount) : lociCount{ lociCount }  {
+	VectorCellProvider(size_t loci_count, std::vector<size_t> &chrom_m, std::vector<Real_t> &between) : loci_count{ loci_count }, chromosome_markers {chrom_m},  betweenBinsLengths { between } {
 	}
 
-	VectorCellProvider(size_t lociCount, std::vector<Real_t> between, std::map<size_t, std::string> loci_to_name_map) :
-		lociCount{ lociCount }, betweenBinsLengths{between}, loci_to_name_map{ loci_to_name_map } {
+	void post_cell(std::vector<Real_t> &cell) {
+		for (size_t i = 0; i < cell.size(); i++) {
+			cells[i].push_back(cell[i]);
+		}
+		cell_count++;
 	}
 
 	Real_t get_counts_score_length_of_bin(size_t bin) const {
@@ -80,32 +82,11 @@ public:
 		return result;
 	}
 
-	void set_loci_to_name_map(const std::vector<std::string> &names, const std::vector<std::string> &chromosomes)
-	{
-		loci_to_name_map.clear();
-		for (size_t i = 0; i < names.size(); i++)
-		{
-			loci_to_name_map[i] = std::to_string((int) std::stold(chromosomes[i])) + "_" + names[i];
-		}
-	}
-
-    void setBetweenLengths(std::vector<Real_t> between) {
-		this->betweenBinsLengths = between;
-	}
-
-	std::map<size_t, std::string> get_loci_to_name()
-	{
-		return this->loci_to_name_map;
-	}
 	std::vector<size_t> getChromosomeMarkers() {
-		return this->chromosomeMarkers;
+		return this->chromosome_markers;
 	}
 
-	void setChromosomeMarkers(std::vector<size_t> chromosomeMarkers) {
-		this->chromosomeMarkers = chromosomeMarkers;
-	}
-
-	Real_t getEventLength(BreakpointPair brkp) const {
+	Real_t get_event_length(Event brkp) const {
 		if (betweenBinsLengths.empty()) {
 			return (Real_t)brkp.second - brkp.first;
 		}
@@ -117,25 +98,14 @@ public:
         }
 		return result;
 	}
-	
-	void postCell(std::vector<Real_t> cell) {
-		for (size_t i = 0; i < cell.size(); i++) {
-			cells[i].push_back(cell[i]);
-		}
-		cellCount++;
-	}
 
 	const std::vector<std::vector<Real_t>> &getCellsToLoci() const {
 		return cells;
 	}
 
-	size_t getCellsCount() const { return cellCount; }
+	size_t get_cells_count() const { return cell_count; }
 
-	size_t getLociCount() const { return lociCount; }
+	size_t get_loci_count() const { return loci_count; }
 
-	std::string get_loci_name(size_t loci)
-	{
-		return loci_to_name_map[loci];
-	}
 };
 #endif // !VECTOR_CELL_PROVIDER_H

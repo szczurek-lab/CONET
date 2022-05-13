@@ -1,7 +1,7 @@
 #ifndef COUNTS_SCORING_H
 #define COUNTS_SCORING_H
 
-#include "pointer_tree.h"
+#include "event_tree.h"
 #include "../cell_provider/vector_cell_provider.h"
 #include "../parameters/parameters.h"
 
@@ -23,19 +23,19 @@ public:
     Real_t all_bins_count = 0.0;
     static bool print;
 
-	void move_cells_to_parent(PointerTree::NodeHandle child, PointerTree::NodeHandle parent, std::map<BreakpointPair, std::set<size_t>> &attachment) {
-		if (attachment.find(child->breakpoints) == attachment.end()) {
+	void move_cells_to_parent(EventTree::NodeHandle child, EventTree::NodeHandle parent, std::map<Event, std::set<size_t>> &attachment) {
+		if (attachment.find(child->label) == attachment.end()) {
 			return;
 		}
-		if (attachment.find(parent->breakpoints) == attachment.end()) {
-			attachment[parent->breakpoints] = std::set<size_t>();
+		if (attachment.find(parent->label) == attachment.end()) {
+			attachment[parent->label] = std::set<size_t>();
 		}
-		attachment[parent->breakpoints].insert(attachment[child->breakpoints].begin(), attachment[child->breakpoints].end());
-		attachment.erase(child->breakpoints);
+		attachment[parent->label].insert(attachment[child->label].begin(), attachment[child->label].end());
+		attachment.erase(child->label);
 	}
 
-    Real_t calculate_mean_count_score(PointerTree::NodeHandle node, std::map<BreakpointPair, std::set<size_t>> &attachment) {
-		if (attachment.find(node->breakpoints) == attachment.end()) {
+    Real_t calculate_mean_count_score(EventTree::NodeHandle node, std::map<Event, std::set<size_t>> &attachment) {
+		if (attachment.find(node->label) == attachment.end()) {
 			return 0.0;
 		}
 		std::map<size_t, Real_t> region_to_sums;
@@ -44,14 +44,14 @@ public:
 
 		std::vector<size_t> event_brkps;
 		Real_t result = 0.0;
-		for (size_t i = node->breakpoints.first; i < node->breakpoints.second; i++) {
+		for (size_t i = node->label.first; i < node->label.second; i++) {
 			event_brkps.push_back(i);
 			region_to_sums[regions[i]] = 0.0;
 			region_to_bins[regions[i]] = 0.0;
 			region_to_squares[regions[i]] = 0.0;
 		}
 
-		for (auto cell : attachment[node->breakpoints]) {
+		for (auto cell : attachment[node->label]) {
 			for (auto brkp : event_brkps) {
 				if (!used[cell][brkp]) {
 					region_to_sums[regions[brkp]] += sum_counts[cell][brkp];
@@ -76,7 +76,7 @@ public:
 		return result;
 	}
 
-	void update_regions_id(std::vector<size_t> &region_ids, BreakpointPair event) {
+	void update_regions_id(std::vector<size_t> &region_ids, Event event) {
 		max_region_id++;
 		std::map<size_t, size_t> region_to_id;
 		for (size_t i = event.first; i < event.second; i++) {
@@ -88,7 +88,7 @@ public:
 		}
 	}
 
-    Real_t calculate_log_score(PointerTree::NodeHandle node, std::map<BreakpointPair, std::set<size_t>> &attachment, size_t &cache_id) {
+    Real_t calculate_log_score(EventTree::NodeHandle node, std::map<Event, std::set<size_t>> &attachment, size_t &cache_id) {
 		Real_t result = 0.0;
 		auto node_cache = cache_id;
 
@@ -98,7 +98,7 @@ public:
 		}
 		regions_cache[cache_id] = regions;
 		/* Update event partition of regions by @node event */
-		update_regions_id(regions, node->breakpoints);
+		update_regions_id(regions, node->label);
 
 		cache_id++;
 		for (auto child : node->children) {
@@ -166,14 +166,14 @@ public:
 		regions_cache.resize(DEFAULT_CACHE_SIZE);
 	}
 
-	Real_t calculate_log_score(PointerTree &tree, std::vector<BreakpointPair> &attachment_vec) {
+	Real_t calculate_log_score(EventTree &tree, std::vector<Event> &attachment_vec) {
 		if (COUNTS_SCORE_CONSTANT_0 == 0.0 && COUNTS_SCORE_CONSTANT_1 == 0) {
 			return 0.0;
 		}
 		refresh_used();
         this->tree_size = 0.0;
 		size_t cache_id = 0;
-		std::map<BreakpointPair, std::set<size_t>> attachment;
+		std::map<Event, std::set<size_t>> attachment;
 		for (size_t cell = 0; cell < attachment_vec.size(); cell++) {
 			if (attachment.find(attachment_vec[cell]) == attachment.end()) {
 				attachment[attachment_vec[cell]] = std::set<size_t>();
@@ -181,7 +181,7 @@ public:
 			attachment[attachment_vec[cell]].insert(cell);
 		}
 		Real_t result = 0.0;
-		for (auto node : tree.root->children) {
+		for (auto node : tree.get_children(tree.get_root())) {
                 result += calculate_log_score(node, attachment, cache_id);
 		}
 		result +=  calculate_log_score_for_root_nodes();
