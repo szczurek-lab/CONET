@@ -80,23 +80,12 @@ public:
 		return result;
 	}
 
-	void set_loci_to_name_map(const std::vector<std::string> &names, const std::vector<std::string> &chromosomes)
-	{
-		loci_to_name_map.clear();
-		for (size_t i = 0; i < names.size(); i++)
-		{
-			loci_to_name_map[i] = std::to_string((int) std::stold(chromosomes[i])) + "_" + names[i];
-		}
-	}
+
 
     void setBetweenLengths(std::vector<Real_t> between) {
 		this->betweenBinsLengths = between;
 	}
 
-	std::map<size_t, std::string> get_loci_to_name()
-	{
-		return this->loci_to_name_map;
-	}
 	std::vector<size_t> getChromosomeMarkers() {
 		return this->chromosomeMarkers;
 	}
@@ -132,10 +121,5 @@ public:
 	size_t getCellsCount() const { return cellCount; }
 
 	size_t getLociCount() const { return lociCount; }
-
-	std::string get_loci_name(size_t loci)
-	{
-		return loci_to_name_map[loci];
-	}
 };
 #endif // !VECTOR_CELL_PROVIDER_H

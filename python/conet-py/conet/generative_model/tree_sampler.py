@@ -10,7 +10,7 @@ class RandomWalkTreeSampler:
     @staticmethod
     def sample_tree(nodes: List[T]) -> nx.DiGraph:
         """
-            Sample random uniform directed tree built from (all) nodes in @nodes.
+            Sample random uniform directed rooted tree built from (all) nodes in @nodes.
             Always nodes[0] is assumed to be the root.
         """
         tree = nx.DiGraph()

@@ -42,8 +42,11 @@ class CorrectedCounts:
     BIN_WIDTH_COLUMN = 3
     BRKP_CANDIDATE_LOCUS_COLUMN = 4
 
-    def __init__(self, path: str, delimiter: str = ";"):
-        self.corr_counts_df = pd.read_csv(path, sep=delimiter, header=0, low_memory=False)
+    def __init__(self, df: pd.DataFrame, chromosomes: List[int] = None):
+        if chromosomes is not None:
+            self.corr_counts_df = df[df["chr"].isin(chromosomes)]
+        else:
+            self.corr_counts_df = df
 
     def get_loci_count(self):
         return self.corr_counts_df.shape[0]

@@ -14,9 +14,9 @@ class DataConverter:
     event_length_normalizer: int
     neutral_cn: int = 2
 
-    def create_CoNET_input_files(self, out_path: str, corrected_counts: CorrectedCounts, chromosomes: List[int]=None):
-        diffs = self.__create_diff_matrix(corrected_counts, chromosomes)
-        counts, squared_counts = self.__create_sum_and_squared_counts_matrices(corrected_counts, chromosomes)
+    def create_CoNET_input_files(self, out_path: str, corrected_counts: CorrectedCounts):
+        diffs = self.__create_diff_matrix(corrected_counts)
+        counts, squared_counts = self.__create_sum_and_squared_counts_matrices(corrected_counts)
 
         with open(out_path + "cell_names", "w") as outfile:
             outfile.write("\n".join(corrected_counts.get_cells_names()))
@@ -24,7 +24,7 @@ class DataConverter:
         np.savetxt(out_path + "counts", counts, delimiter=";", fmt='%.6f')
         np.savetxt(out_path + "counts_squared", squared_counts, delimiter=";", fmt='%.6f')
 
-    def __create_diff_matrix(self, cc: CorrectedCounts, chromosomes: List[int] = None) -> np.ndarray:
+    def __create_diff_matrix(self, cc: CorrectedCounts) -> np.ndarray:
         NON_RATIO_DIFF_COLS = {
             "chromosome": 1,
             "bin_start": 0,
@@ -32,7 +32,7 @@ class DataConverter:
         }
 
         diffs_columns = cc.get_cells_count() + len(NON_RATIO_DIFF_COLS)
-        brkp_candidates_indices = cc.get_brkp_candidate_loci_idx(chromosomes)
+        brkp_candidates_indices = cc.get_brkp_candidate_loci_idx()
         diffs = np.zeros((len(brkp_candidates_indices), diffs_columns))
         brkp_candidates_indices.append(cc.get_loci_count())
 
@@ -61,8 +61,8 @@ class DataConverter:
         squares = np.square(counts)
         return np.array(squares.sum())
 
-    def __create_sum_and_squared_counts_matrices(self, corrected_counts: CorrectedCounts, chromosomes):
-        loci_candidate_indices = corrected_counts.get_brkp_candidate_loci_idx(chromosomes)
+    def __create_sum_and_squared_counts_matrices(self, corrected_counts: CorrectedCounts):
+        loci_candidate_indices = corrected_counts.get_brkp_candidate_loci_idx()
         counts = np.zeros((len(loci_candidate_indices), corrected_counts.get_cells_count() + 1))
         squared_counts = np.zeros((len(loci_candidate_indices), corrected_counts.get_cells_count() + 1))
 

@@ -15,7 +15,7 @@ Ewa Szczurek, szczurek@mimuw.edu.pl
 ## Requirements
 ### Necessary
 * C++ compiler that supports C++14 standard
-* Python 3.0 or higher
+* Python 3.6 or higher
 * GNU Make
 ### Additional
 * R 4.0 or higher (for output plotting)
@@ -124,15 +124,15 @@ CONET depends on a number of user-defined parameters which are represented by ob
 
 For more details please refer to Additional File 1: S7 A recommended procedure for setting CONET regularization parameters.
 
-| Parameter name | Recommendation | Initial value |
-| ---- | -------- | --- |
-| **param_inf_iters** | Start with initial value, save and plot likelihood to check convergence. Depends on input size - number of cells and candidate breakpoint loci. | 250000 |
-| **pt_inf_iters** | Start with initial value, save and plot likelihood to check convergence. Depends on input size - number of cells and candidate breakpoint loci.  | 500000 |
-| **event_length_penalty_k0** | Start with initial value and increase if you want to penalize trees inferring long events. | 1.0 |
-| **tree_structure_prior_k1** | Start with initial value and try increasing/decreasing if quality measures are not satisfactory.  | 0.0 |
-| **counts_penalty_s1** | Start with initial value and try increasing/decreasing if quality measures are not satisfactory. | 100000.0 |
-| **counts_penalty_s2** | Start with initial value and try increasing/decreasing if quality measures are not satisfactory. | 100000.0 |
-| **seed** | Try using different seed to make sure you do not stuck in local optima. | 12312 |
+| Parameter name              | Recommendation                                                                                                                                  | Initial value |
+|-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| **param_inf_iters**         | Start with initial value, save and plot likelihood to check convergence. Depends on input size - number of cells and candidate breakpoint loci. | 250000        |
+| **pt_inf_iters**            | Start with initial value, save and plot likelihood to check convergence. Depends on input size - number of cells and candidate breakpoint loci. | 500000        |
+| **event_length_penalty_k0** | Start with initial value and increase if you want to penalize trees inferring long events.                                                      | 1.0           |
+| **tree_structure_prior_k1** | Start with initial value and try increasing/decreasing if quality measures are not satisfactory.                                                | 0.0           |
+| **counts_penalty_s1**       | Start with initial value and try increasing/decreasing if quality measures are not satisfactory.                                                | 100000.0      |
+| **counts_penalty_s2**       | Start with initial value and try increasing/decreasing if quality measures are not satisfactory.                                                | 100000.0      |
+| **seed**                    | Try using different seed to make sure you do not stuck in local optima.                                                                         | 12312         |
 
 We recommend that all other parametr values are left at default.
 
