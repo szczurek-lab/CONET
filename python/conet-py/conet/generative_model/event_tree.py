@@ -12,19 +12,22 @@ logger = get_logger(__name__)
 
 @dataclass
 class EventTree:
+    """
+    Represents tree of events in the generative model.
+
+    Each tree has a distinguished section - the trunk (including the root).
+    No cells are allowed to be attached to the trunk.
+    """
     tree: nx.DiGraph
     trunk_nodes: List[NodeLabel]
 
     def get_root(self) -> NodeLabel:
         return self.trunk_nodes[0]
 
-    # TODO
     def get_breakpoint_loci(self) -> List[int]:
-        real_ind = list(map(lambda x: x.start, list(self.tree.nodes)))
-        real_ind.extend(list(map(lambda x: x.end, list(self.tree.nodes))))
-        real_ind = list(set(real_ind))
-        real_ind.sort()
-        return real_ind
+        indices = list(set([x.start for x in self.tree.nodes] + [x.end for x in self.tree.nodes]))
+        indices.sort()
+        return indices
 
     def get_node_counts_and_breakpoints(self, neutral_cn: int, node: NodeLabel, no_loci: int) -> Tuple[
         np.ndarray, np.ndarray]:
