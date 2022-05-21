@@ -2,6 +2,7 @@ import json
 from typing import Tuple, Dict, List
 
 import networkx as nx
+import numpy
 import numpy as np
 
 from conet.data_converter.corrected_counts import CorrectedCounts
@@ -17,6 +18,25 @@ class InferenceResult:
         self.__attachment = self.__load_attachment(output_path + "inferred_attachment")
         self.inferred_tree = self.__get_pretty_tree()
         self.attachment = self.__get_pretty_attachment()
+
+    def dump_results_to_dir(self, dir: str, neutral_cn: int) -> None:
+        if not dir.endswith('/'):
+            dir = dir + '/'
+        with open(dir + "inferred_attachment", 'w') as f:
+            cells = self.__cc.get_cells_names()
+            for i in range(0, len(self.attachment)):
+                f.write(";".join([cells[i], f"{int(self.attachment[i]['chr'])}_{self.attachment[i]['bin_start']}", f"{int(self.attachment[i]['chr'])}_{self.attachment[i]['bin_end']}\n"]))
+
+        numpy.savetxt(dir + "inferred_counts", X=self.get_inferred_copy_numbers(neutral_cn), delimiter=";")
+
+        def __node_to_str(node: Tuple[int, int]) -> str:
+            if node == (0, 0):
+                return "(0,0)"
+            chr = int(self.__cc.get_locus_chr(node[0]))
+            return f"({chr}_{self.__cc.get_locus_bin_start(node[0])},{chr}_{self.__cc.get_locus_bin_start(node[1])})"
+        with open(dir + "inferred_tree", 'w') as f:
+            for edge in self.__tree.edges:
+                f.write(f"{__node_to_str(edge[0])}-{__node_to_str(edge[1])}\n")
 
     def get_inferred_copy_numbers(self, neutral_cn: int) -> np.ndarray:
         counts = np.full((self.__cc.get_loci_count(), self.__cc.get_cells_count()), neutral_cn)
@@ -44,6 +64,11 @@ class InferenceResult:
             parent_node = next(self.__tree.predecessors(node))
             for c in attached_cells:
                 attachment[c] = parent_node
+        # If chromosome ends have been added we want to delete them from the result - this ensures that inferred counts matrix
+        # and input CC matrix have the same number of rows
+        if self.__cc.added_chr_ends:
+            chromosome_ends = [bin for bin in range(0, self.__cc.get_loci_count()) if self.__cc.is_last_locus_in_chr(bin)]
+            counts = np.delete(counts, chromosome_ends, axis=0)
         return counts
 
     def __node_to_pretty(self, node: Tuple[int, int]) -> Dict:

@@ -47,6 +47,7 @@ class CorrectedCounts:
             self.corr_counts_df = df[df["chr"].isin(chromosomes)]
         else:
             self.corr_counts_df = df
+        self.added_chr_ends = False
 
     def get_loci_count(self):
         return self.corr_counts_df.shape[0]
@@ -91,6 +92,7 @@ class CorrectedCounts:
         return self.corr_counts_df.iloc[loc1:loc2, 5:]
 
     def add_chromosome_ends(self, neutral_cn: int, end_bin_length: int) -> 'CorrectedCounts':
+        self.added_chr_ends = True
         i = 0
         while i < self.corr_counts_df.shape[0]:
             if self.is_last_locus_in_chr(i):

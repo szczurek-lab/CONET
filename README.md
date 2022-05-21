@@ -125,8 +125,6 @@ Binary matrix with inferred breakpoints per genomic locus and cell (coresspondin
 Model parameters inffered by CONET. 
 On first line mean and variance of no_breakpoint distribution (R+ truncated normal).
 On the following lines: weigth; mean; variance of the components of breakpoint distribution (R+ truncated mixed normal). One line per each component.
-#### edge_confidence
-Inferred CONET edges with number of iterations (after burn in phase) they appeared in.
 
 ## Final CN calling and output visualization 
 Final CN matrix can be inferred with provided R script. It also allows the user to visualize results of CONET model.

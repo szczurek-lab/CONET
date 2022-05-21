@@ -38,6 +38,38 @@ Should be equal to 1 if bin should be considered as a breakpoint candidate, to 0
 
 **Example of input matrix for SA501X3F xenograft breast cancer data is contained in data/SA501X3F_filtered_corrected_counts.csv**
 
+
+## Outputs
+We end the computation by dumping results with command:
+``` 
+InferenceResult.dump_results_to_dir
+```
+Results consist of three files:
+* inferred_tree 
+* inferred_attachment
+* inferred_counts 
+
+*inferred_counts* is a n x m matrix where n is equal to number of cells and m is equal to number of loci in input corrected counts matrix. 
+It stores inferred Copy Number profiles. 
+
+*inferred_tree* contains lines in the format:
+
+```
+   (<chr>_<bin_start>,<chr>_<bin_start2>)-(<chr2>_<bin_start3>,<chr2>_<bin_start4>)
+```
+and should be interpreted as:
+Node with event spanning segment *[bin_start, bin_start2)* in chromosome *chr* is a parent of node with event spanning segment 
+*[bin_start3, bin_start4)* in chromosome *chr2*.
+
+*inferred_attachment* contains lines in the format:
+    
+```
+            <cell_name>;<chr>_<bin_start>;<chr>_<bin_start2>
+```
+And should be interpreted as:
+Cell with name <cell_name> (cell names are taken from corrected counts matrix headers) is attached to node with event 
+spanning *[bin_start, bin_start2)* in chromosome *chr*.
+
 ## Plotting
 Set RESULTS_DIR variable to path to directory containing inference result files.
 
@@ -47,3 +79,4 @@ The script will output:
 * inferred tree plot (tree.html)
 * inferred counts heatmap (heatmap_CNs.tiff)
 * real corrected counts heatmap (heatmap_CCs.tiff)
+
