@@ -1,9 +1,11 @@
-from conet.data_converter.data_converter_2 import CorrectedCounts
+import pandas as pd
+
+from conet.data_converter.data_converter import CorrectedCounts
 
 
 
 def test_corrected_counts_basic_ops():
-    cc = CorrectedCounts("./data_converter/data/data1.csv")
+    cc = CorrectedCounts(pd.read_csv("./data_converter/data/data1.csv", sep=';', header=0, low_memory=False))
 
     assert cc.get_loci_count() == 8
 
