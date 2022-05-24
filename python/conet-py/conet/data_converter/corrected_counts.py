@@ -3,7 +3,6 @@ from typing import List
 import numpy as np
 import pandas as pd
 
-
 __HUMAN_CHR_LENGTHS__ = {
     1: 249250621,
     2: 243199373,
@@ -42,12 +41,12 @@ class CorrectedCounts:
     BIN_WIDTH_COLUMN = 3
     BRKP_CANDIDATE_LOCUS_COLUMN = 4
 
-    def __init__(self, df: pd.DataFrame, chromosomes: List[int] = None):
-        if chromosomes is not None:
-            self.corr_counts_df = df[df["chr"].isin(chromosomes)]
-        else:
-            self.corr_counts_df = df
+    def __init__(self, df: pd.DataFrame):
+        self.corr_counts_df = df
         self.added_chr_ends = False
+
+    def get_as_numpy(self) -> np.ndarray:
+        return (self.corr_counts_df.iloc[:, 5:]).to_numpy()
 
     def get_loci_count(self):
         return self.corr_counts_df.shape[0]
@@ -73,20 +72,18 @@ class CorrectedCounts:
     def get_cells_names(self) -> List[str]:
         return list(self.corr_counts_df.columns.values.tolist())[5:]
 
-    def get_brkp_candidate_loci_idx(self, chromosomes: List[int] = None) -> List[int]:
-        if chromosomes is None:
-            return [i for i in range(0, self.corr_counts_df.shape[0])
-                    if self.corr_counts_df.iloc[i, CorrectedCounts.BRKP_CANDIDATE_LOCUS_COLUMN] == 1]
+    def get_brkp_candidate_loci_idx(self) -> List[int]:
         return [i for i in range(0, self.corr_counts_df.shape[0])
-                if self.corr_counts_df.iloc[i, CorrectedCounts.BRKP_CANDIDATE_LOCUS_COLUMN] == 1 and self.get_locus_chr(
-                i) in chromosomes]
+                    if self.corr_counts_df.iloc[i, CorrectedCounts.BRKP_CANDIDATE_LOCUS_COLUMN] == 1]
 
     def get_total_bin_length_between_loci(self, loc1: int, loc2: int) -> int:
         if self.is_last_locus_in_chr(loc1):
             return self.corr_counts_df.iloc[loc1][self.BIN_WIDTH_COLUMN]
 
-        return sum([self.corr_counts_df.iloc[i + 1][self.BIN_START_COLUMN] - self.corr_counts_df.iloc[i][self.BIN_START_COLUMN]
-                    for i in range(loc1, loc2) if (not self.is_last_locus_in_chr(i)) and self.get_locus_chr(i + 1) == self.get_locus_chr(loc1)])
+        return sum(
+            [self.corr_counts_df.iloc[i + 1][self.BIN_START_COLUMN] - self.corr_counts_df.iloc[i][self.BIN_START_COLUMN]
+             for i in range(loc1, loc2) if
+             (not self.is_last_locus_in_chr(i)) and self.get_locus_chr(i + 1) == self.get_locus_chr(loc1)])
 
     def get_counts_between_loci(self, loc1: int, loc2: int):
         return self.corr_counts_df.iloc[loc1:loc2, 5:]
@@ -97,7 +94,9 @@ class CorrectedCounts:
         while i < self.corr_counts_df.shape[0]:
             if self.is_last_locus_in_chr(i):
                 self.corr_counts_df = pd.concat([self.corr_counts_df.iloc[:(i + 1)],
-                                                 pd.DataFrame([self.__create_chromosome_end_corrected_counts(self.get_locus_chr(i), neutral_cn, end_bin_length)], columns=self.corr_counts_df.columns),
+                                                 pd.DataFrame([self.__create_chromosome_end_corrected_counts(
+                                                     self.get_locus_chr(i), neutral_cn, end_bin_length)],
+                                                              columns=self.corr_counts_df.columns),
                                                  self.corr_counts_df.iloc[(i + 1):]
                                                  ], ignore_index=True, axis=0)
                 i = i + 2
@@ -116,4 +115,3 @@ class CorrectedCounts:
 
     def __is_last_locus_in_chr(self, loc: int) -> bool:
         return loc == self.corr_counts_df.shape[0] - 1 or self.get_locus_chr(loc) != self.get_locus_chr(loc + 1)
-

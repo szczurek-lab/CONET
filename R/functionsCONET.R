@@ -1,5 +1,34 @@
 
+get_end_of_node <- function(chromosome, start) {
+  reads_local <- all_reads[all_reads$chr == chromosome & all_reads$start < start, ]
+  return (max(reads_local$start))
+}
 
+node_label_to_data <- function(label) {
+  locus1 <- strsplit(strsplit(label, ",")[[1]][1], "\\(")[[1]][2]
+  locus2 <- strsplit(strsplit(label, ",")[[1]][2], "\\)")[[1]][1]
+  chromosome <- as.integer(strsplit(locus1, "_")[[1]][1])
+  X1 <- strsplit(locus1, "_")[[1]][2]
+  X2 <- strsplit(locus2, "_")[[1]][2]
+  start <- as.integer(X1)
+  end <- get_end_of_node(chromosome, as.integer(X2))
+  return (list("chr"=chromosome, "start"=start, "end"=end))
+}
+
+create_attachment_matrix <- function(attachment_file) {
+  attachment <- read.table(attachment_file, sep =";", stringsAsFactors = F)
+  attachment$start <- 0
+  attachment$end <- 0
+  attachment$chromosome <- 0
+  for (i in 1:dim(attachment)[1]) {
+    node_data <- node_label_to_data(paste("(", as.character(attachment$V3[i]), ",", as.character(attachment$V4[i]), ")", sep =""))
+    attachment$start[i] <- node_data$start 
+    attachment$end[i] <- node_data$end
+    attachment$chromosome[i] <- node_data$chr
+  }
+  attachment$node <- paste("(", attachment$chromosome, "_", attachment$start, ",", attachment$chromosome, "_", attachment$end , ")", sep="")
+  return(attachment)
+}
 
 #' function getting genes in node
 #' @param label_child_hash name of the node from CONET edges$child_hash matrix
@@ -43,139 +72,78 @@ create_edges_matrix <- function(tree_file, attachment_file) {
   edges <- read.table(tree_file, sep="-", stringsAsFactors = F)
   edges$hash <- as.character(edges$V1)
   edges$child_hash <- as.character(edges$V2)
-  attachment <- read.table(attachment_file, sep =";", stringsAsFactors = F)
-  attachment$node <- paste("(", as.character(attachment$V2), ",", as.character(attachment$V3), ")", sep ="")
-  EDGES <- dim(edges)[1]
-  edges$start1 <- rep(0, EDGES)
-  edges$start2 <- rep(0, EDGES)
-  edges$start3 <- rep(0, EDGES)
-  edges$start4 <- rep(0, EDGES)
-  edges$chromosome1 <- rep(0, EDGES)
-  edges$chromosome2 <- rep(0, EDGES)
-  edges$cells <- rep(0, EDGES)  
+  edges$start_parent <- 0
+  edges$end_parent <- 0
+  edges$start_child <- 0
+  edges$end_child <- 0
+  edges$chromosome_parent <- 0
+  edges$chromosome_child <- 0
+  edges$cells <- 0
   return (edges)
 }
 
-
-##### node functions
-get_start_of_node <- function(chromosome, start) {
-  reads_local <- all_reads[all_reads$chr == chromosome & all_reads$start > start, ]
-  return (min(reads_local$start))
-}
-
-get_end_of_node <- function(chromosome, start) {
-  reads_local <- all_reads[all_reads$chr == chromosome & all_reads$start < start, ]
-  return (max(reads_local$start))
-}
-
-get_number_of_attached_cells <- function(node) {
-  return (sum(attachment$node == node))
-}
-
-
-
 #### function filling the edges matrix with tree data
-fill_edges_matrix <- function(edges) {
+fill_edges_matrix <- function(edges, attachment) {
   for (i in 1:nrow(edges)) {
-    label <- as.character(edges$child_hash[i])
-    event1 <- strsplit(strsplit(label, ",")[[1]][1], "\\(")[[1]][2]
-    event2 <- strsplit(strsplit(label, ",")[[1]][2], "\\)")[[1]][1]
-    chromosome <- as.integer(strsplit(event1, "_")[[1]][1])
-    X1 <- strsplit(event1, "_")[[1]][2]
-    X2 <- strsplit(event2, "_")[[1]][2]
-    start1 <- as.integer(X1)
-    start2 <- get_end_of_node(chromosome, as.integer(X2))
-    edges$start3[i] <- start1
-    edges$start4[i] <- start2
-    edges$chromosome2[i] <- chromosome
-    edges$cells[i] <- get_number_of_attached_cells(label)
-    
+    node_data <- node_label_to_data(as.character(edges$child_hash[i]))
+    edges$start_child[i] <- node_data$start
+    edges$end_child[i] <- node_data$end
+    edges$chromosome_child[i] <- node_data$chr
+    edges$cells[i] <- sum(attachment$start == node_data$start & attachment$end == node_data$end & attachment$chromosome == node_data$chr)
     if (i != 1 &  as.character(edges$hash[i]) != "(0,0)" ) {
-      label <- as.character(edges$hash[i])
-      event1 <- strsplit(strsplit(label, ",")[[1]][1], "\\(")[[1]][2]
-      event2 <- strsplit(strsplit(label, ",")[[1]][2], "\\)")[[1]][1]
-      chromosome <- as.integer(strsplit(event1, "_")[[1]][1])
-      X1 <- strsplit(event1, "_")[[1]][2]
-      X2 <- strsplit(event2, "_")[[1]][2]
-      start1 <- as.integer(X1)
-      start2 <- get_end_of_node(chromosome, as.integer(X2))
-      edges$start1[i] <- start1
-      edges$start2[i] <- start2
-      edges$chromosome1[i] <- chromosome
-      
+      node_data <- node_label_to_data(as.character(edges$hash[i]))
+      edges$start_parent[i] <- node_data$start
+      edges$end_parent[i] <- node_data$end
+      edges$chromosome_parent[i] <- node_data$chr
     }
   }
+  edges$child_hash <- paste("(", edges$chromosome_child, "_", edges$start_child, ",", edges$chromosome_child, "_", edges$end_child, ")", sep="")
+  edges$hash <- paste("(", edges$chromosome_parent, "_", edges$start_parent, ",", edges$chromosome_parent, "_", edges$end_parent, ")", sep="")
+  edges$hash[edges$hash == "(0_0,0_0)"] <- "(0,0)"
   return (edges)
 }
 
 
 
 ##### functions for tree printing
-buildTree <- function(root, edges) {
+build_tree <- function(root, edges) {
   for (i in 1:length(edges$hash)[1]) {
-    #print(i)
     if (edges$hash[i] == root$name) {
       child <- root$AddChild(edges$child_hash[i])
-      #print(root)
-      buildTree(child, edges)
+      build_tree(child, edges)
     }
   }
 }
 
 
-GetNodeLabel <- function(node, genes_dict=genes_location, cancer_type=cancer_type_input, bin_width=bin_width_input) {
+get_node_label <- function(node, genes_dict=genes_location, cancer_type=cancer_type_input, bin_width=bin_width_input) {
   if (as.character(node$name) == "(0,0)") {
-    return (paste(node$name, " " , as.character(get_number_of_attached_cells(node$name)), sep = ""))
+    return (paste(node$name, " " , as.character(dim(all_reads)[2] - 5 - sum(edges$cells)), sep = ""))
   }
   
   edge <- edges[edges$child_hash == node$name, ]
-  end_for_label <- edge$start4 + bin_width
+  end_for_label <- edge$end_child + bin_width
   return (paste(
-    paste(edge$chromosome2, " [",edge$start3, ",", end_for_label, "] " ),
+    paste(edge$chromosome_child, " [",edge$start_child, ",", end_for_label, "] " ),
     paste(get_gene_in_node(node$name, genes_dict = genes_dict, bin_width=bin_width, cancer_type = cancer_type), collapse=" "),
-    paste("number of cells:", as.character(get_number_of_attached_cells(node$name))),
+    paste("number of cells:", as.character(edge$cells)),
     sep = "\n"))
 }
 
 
-
-GetEdgeLabel <- function(node) {
-  confidence <- max(edge_confidence[as.character(edge_confidence$V2) == node$name, 3])
-  return (as.character(confidence))
-}
-
-
-
-##### reading attachment info
-create_attachment_matrix <- function(attachment_file) {
-
-attachment <- read.table(attachment_file, sep =";", stringsAsFactors = F)
-attachment$node <- paste("(", as.character(attachment$V3), ",", as.character(attachment$V4), ")", sep ="")
-return(attachment)
-}
-
 ##### building a tree object
-build_tree <- function(root_name, edges_matrix) {
-  root <- Node$new(root_name)
-  buildTree(root, edges = edges_matrix)
+tree_from_edges <- function(edges_matrix) {
+  root <- Node$new(edges_matrix$hash[1], )
+  build_tree(root, edges = edges_matrix)
   return(root)
 }
 
 ##### plot and save tree
 plot_tree <- function(tree_object, output_file) {
-  
-  # fontname = 'helvetica', fontsize=45, label = GetNodeLabel,
-  SetNodeStyle(tree_object,  label = GetNodeLabel, fontcolor = "black", fontname = 'helvetica', fontsize=45)
-  
-  #style = "filled", fillcolor = GetNodeColor
-  #SetEdgeStyle(root, fontname = 'helvetica', fontsize=45, label = GetEdgeLabel)
-  
-  #RYSOWANIE DRZEWA
-  # plotting and saving the plot
+  SetNodeStyle(tree_object,  label = get_node_label, fontcolor = "black", fontname = 'helvetica', fontsize=45)
   x = plot(tree_object)
   saveWidget(x, "temp.html")
   webshot("temp.html", output_file)
-  #, vwidth = 1591, vheight = 1451
 }
 
 
@@ -246,35 +214,28 @@ create_node_ancestor_cell_dict <- function(node_cell_dict, list_of_leafs, edges_
 ####################################################################################
 ####################################################################################
 
-##### creating list of pre ordered nodes by hash
 create_pre_order_nodes_list <- function(tree_object, list_of_nodes, list_of_leafs) {
-  
   pre_order <- Traverse(tree_object, traversal = "pre-order")
   pre_order_nodes <- c()
   for (i in 1:length(list_of_nodes)) {
     pre_order_nodes <- append(pre_order_nodes, pre_order[[i]]$name)
   }
   pre_order_nodes <- append(pre_order_nodes, list_of_leafs[!(list_of_leafs%in%pre_order_nodes)])
-  
   return(pre_order_nodes)
   
 }
 
-##### list of in ordered nodes by hash
 create_in_order_nodes_list <- function(tree_object, list_of_nodes) {
-  
   in_order <- Traverse(tree_object, traversal = "level")
-  
   in_order_nodes <- c()
   for (i in 1:length(list_of_nodes)+1) {
     in_order_nodes <- append(in_order_nodes, in_order[[i]]$name)
   }
-  
   return(in_order_nodes)
 }
 
 
-CN_inference <- function(tree_object, cc_input, edges_matrix, attachment, only_CNs_for_heatmaps=F, main_CN, max_CN, use_median=T) {
+CN_inference <- function(tree_object, cc_input, edges_matrix, attachment, only_CNs_for_heatmaps=F, main_CN, max_CN, use_median=F) {
   
   # list of all non-root nodes and genes in them
   all_non_root_nodes <- unique(edges_matrix$child_hash)
@@ -290,8 +251,6 @@ CN_inference <- function(tree_object, cc_input, edges_matrix, attachment, only_C
   #### i.e. cells attached to this node and all it's children
   #### i.e. all cells that underwent the event described in node
   #### position on attachment list corresponds to position on all_non_root_nodes list
-  
-  ### create empty list
   att_dict <- create_node_ancestor_cell_dict(node_cell_dict = cell_attachment, list_of_leafs = leafs, edges_matrix = edges_matrix)
 
   
@@ -310,9 +269,9 @@ CN_inference <- function(tree_object, cc_input, edges_matrix, attachment, only_C
   ### iterate over nodes
   for (node in pre_order_nodes[2:length(pre_order_nodes)]) {
     
-    start_chromosome <- edges_matrix[edges_matrix$child_hash==node, "chromosome2"]
-    start <- edges_matrix[edges_matrix$child_hash==node, "start3"]
-    end <- edges_matrix[edges_matrix$child_hash==node, "start4"]
+    start_chromosome <- edges_matrix[edges_matrix$child_hash==node, "chromosome_child"]
+    start <- edges_matrix[edges_matrix$child_hash==node, "start_child"]
+    end <- edges_matrix[edges_matrix$child_hash==node, "end_child"]
     
     start_row <- which(cc_input$chr == start_chromosome & cc_input$start == start)
     end_row <- which(cc_input$chr == start_chromosome & cc_input$start == end)
@@ -320,12 +279,10 @@ CN_inference <- function(tree_object, cc_input, edges_matrix, attachment, only_C
     names_of_cells <- att_dict[[node]]
     
     bins_an[start_row:end_row, names_of_cells] <- sapply(bins_an[start_row:end_row, names_of_cells], function(x) paste(x, node))
-    
   }
   
   
   clusters <- unique(unlist(bins_an[,6:ncol(bins_an)]))
-  length(clusters)
   no_of_clusters <- length(clusters[clusters!=tree_object$name])
 
   
