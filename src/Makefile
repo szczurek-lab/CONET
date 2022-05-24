@@ -1,6 +1,6 @@
 PROG = CONET
 CC = g++
-CPPFLAGS = -O3 -std=c++14 -Wall -Wextra -lpthread -g
+CPPFLAGS = -O3 -std=c++14 -lpthread -g
 LDFLAGS = -lpthread
 OBJS = CONET.o logger.o parameters.o breakpoints.o csv_reader.o move_type.o
 

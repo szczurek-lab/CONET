@@ -38,7 +38,7 @@ void save_hmm_matrix(std::string path, PointerTree &tree, std::vector<Breakpoint
     }
 }
 
-void save_attachment(std::string data_path, std::string path, std::map<size_t, std::string> loci_names, std::vector<BreakpointPair> attachment) {
+void save_attachment(std::string data_path, std::string path, std::vector<BreakpointPair> attachment) {
 
 	std::ifstream in(data_path.append("cell_names"));
 	std::string str;
@@ -52,21 +52,8 @@ void save_attachment(std::string data_path, std::string path, std::map<size_t, s
 	std::ofstream file{ path };
 	for (size_t j = 0; j < attachment.size(); j++)
 	{
-		if (attachment[j].first == 0 && attachment[j].second == 0) {
 				file << cells[j] << ";" << j << ";" << attachment[j].first << ";" << attachment[j].second << "\n";
-		} else {
-			file << cells[j] << ";" << j << ";" << loci_names[attachment[j].first] << ";" << loci_names[attachment[j].second] << "\n";
-		}
 	}
-}
-
-void save_edge_confidence(std::string path, PointerTree &tree, std::map<std::pair<BreakpointPair, BreakpointPair>, size_t> &edge_count, std::map<size_t, std::string> loci_to_name) {
-	std::ofstream file{ path };
-    auto edges = tree.gatherEdges();
-
-	for (auto edge : edges) {
-		file << tree.get_node_label(edge.first, loci_to_name) << ";" << tree.get_node_label(edge.second, loci_to_name) << ";" << edge_count[edge] << " \n";
-    }
 }
 
 void save_parameters(string path, NormalMixtureLikelihood<double> likelihood) {
@@ -150,11 +137,10 @@ int main(int argc, char **argv)
 	log("Tree inference has finished");
 
 	PointerTree inferred_tree = std::get<0>(std::get<0>(result));
-	tree_file << inferred_tree.toString(provider.get_loci_to_name());
+	tree_file << inferred_tree.toString();
 
     save_hmm_matrix(string(output_dir).append("inferred_breakpoints"), get<0>(get<0>(result)), get<1>(get<0>(result)), provider.getLociCount());
-    save_edge_confidence(string(output_dir).append("edge_confidence"), std::get<0>(get<0>(result)), std::get<3>(result), provider.get_loci_to_name());
-    save_attachment(data_dir, string(output_dir).append("inferred_attachment"), provider.get_loci_to_name(), std::get<1>(get<0>(result)));
+    save_attachment(data_dir, string(output_dir).append("inferred_attachment"), std::get<1>(get<0>(result)));
     save_parameters(string(output_dir).append("inferred_distribution"), get<4>(result));
     return 0;
 }

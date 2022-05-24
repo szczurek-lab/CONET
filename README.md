@@ -15,37 +15,29 @@ Ewa Szczurek, szczurek@mimuw.edu.pl
 ## Requirements
 ### Necessary
 * C++ compiler that supports C++14 standard
-* Python 3.0 or higher
+* Python 3.6 or higher
 * GNU Make
 ### Additional
 * R 4.0 or higher (for output plotting)
 
-## Installation
+# Usage 
+We advise new users to examine notebooks found in python/notebooks directory.
 
-### C++
-```bash
-git clone https://github.com/tc360950/CONET.git # Clone the repository
-cd CONET/src
-make                                          # Build the executables
-```
+# Contents 
 
-### Python wrapper
-```bash
-cd python/conet
-pip install .
-```
+This project consists of 3 main components:
+* CONET cpp sources which define CONET executable 
+* CONET executable should not be used directly but with aid of conet-py python package (*python/conet-py*)
+* R script for advanced plots of inference results 
 
-### Most important Python classes:
-#### CONET
-Thin wrapper over CONET - calls CONET executable.
-#### CONETParameters
-Represents user-defined parameters passed to CONET.
-#### DataConverter
-Converts corrected counts matrix to CONET specific input.
-#### InferenceResult
-Reads inference results from output files.
+# Installation
 
-## Input Data
+## In container 
+Use image defined in *CONET.Dockerfile*. It installs conet-py and compiles cpp CONET into executable 
+*~/conet-py/CONET*. If you want to install CONET locally it's easy to mimic steps executed in the image. 
+
+
+# Input Data
 
 ### Corrected counts matrix 
 Basic input data should be provided in the form of corrected counts matrix. With subsequent bins in rows and cells in columns.
@@ -68,17 +60,6 @@ binary breakpoint indicator:
 Example of input matrix for SA501X3F xenograft breast cancer data is contained in CONET/python/notebooks/biological_data/data/SA501X3F_filtered_corrected_counts.csv
 and for TN2 breast cancer data -- in CONET/R/TN2_corrected_counts_with_indices_50cells.csv
 ```
-### Input data in the form of corrected count matrix should be passed to object from DataConverter class with following parameters
-| Parameter name | Description | Default value |
-| ---- | -------- | --- |
-| **neutral_cn** | Neutral copy number also called basal ploidy assumed number of whole genenome copies present in the cell that would attach to CONET root. | 2 |
-| **delimeter** | Delimiter used to separate columns in input.csv file.  | "," |
-| **default_bin_width** | Real constant which will be used for artifical bin's corresponding to ends of chromosomes (set to average for data with varying bin widths). | 150000 |
-| **event_length_normalizer** | Real constant which will be used to normalize event lengths (total length of all used chromosomes).  | 3095677412 |
-| **add_chr_ends_to_indices** | It is recommended to add artifical chromosome ends to the set of candidate breakpoint loci. | True |
-Option add_chr_ends_to_indices from method DataConverter.create_CoNET_input_files should be set to the same value as add_chr_ends_to_indices.
-
-For the user's convenience DataConverter.create_CoNET_input_files allows passing of @chromosomes list which contains numbers of chromosomes for which the inference will be conducted. Note that the plotting script always outputs inferred heatmap for the whole genome, hence for chromosomes not contained in the list every bin will have neutral copy number. 
 
 ## CONET should be used with the aid of provided Python scripts. 
 
@@ -91,48 +72,44 @@ Contains notebook for synthetic data generation, inference and result scoring.
 * python/notebooks/per_bin_generative_model/generative_model.ipynb
 * python/notebooks/per_breakpoint_generative_model/generative_model.ipynb
 
-### Running the Python scripts
-```bash
-set @bin_dir variable to path to directory which contains CoNET executable
-Use provided R script to plot inferred tree and count matrix.
-```
 
 ## Usage details
 ### CONET user-defined parameters
 CONET depends on a number of user-defined parameters which are represented by objects of class CONETParameters. 
-| Parameter name | Description | Default value |
-| ---- | -------- | --- |
-| **data_dir** | Path to directory containing input file. |"./" |
-| **output_dir** | Path to output directory. Inference results will be saved there.  |"./output" |
-| **param_inf_iters** | Number of MCMC iterations for joint tree and model parameters inference. | 100000 |
-| **pt_inf_iters** | Number of MCMC iterations for tree inference. | 100000 |
-| **counts_penalty_s1** | Constant controlling impact of penalty for large discrepancies between inferred and real count matrices. | 0.0 |
-| **counts_penalty_s2** | Constant controlling impact of penalty for inferring clusters with changed copy number equal to basal ploidy. | 0.0 |
-| **event_length_penalty_k0** | Constant controlling impact of penalty for long inferred events. | 1.0 |
-| **tree_structure_prior_k1** | Constant controlling impact of data size part of tree structure prior. | 1.0 |
-| **use_event_lengths_in_attachment** | If True cell attachment probability will depend on average event length in the history, otherwise it will be uniform.| True |
-| **seed** | Seed for C++ RNG | 12312 |
-| **mixture_size** | Initial number of components in difference distribution for breakpoint loci. This value may be decreased in the course of inference but will never be increased.| 4 |
-| **num_replicas** | Number of tempered chain replicas in MAP event tree search. | 5 |
-| **threads_likelihood** | Number of threads which will be used for the most demanding likelihood calculations. | 4 |
-| **parameter_resampling_frequency** | Number of tree MCMC moves for each parameter MCMC move. | 10 |
-| **moves_between_swaps** | Number of MCMC moves done by each replica before swap move is attempted. | 10 |
-| **burn_in** | Number of MCMC iterations which should be skipped before statistics gathering. | 10000 |
-| **verbose** | True if CONET should print messages during inference. | True |
+
+| Parameter name                      | Description                                                                                                                                                      | Default value |
+|-------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| **data_dir**                        | Path to directory containing input file.                                                                                                                         | "./"          |
+| **output_dir**                      | Path to output directory. Inference results will be saved there.                                                                                                 | "./output"    |
+| **param_inf_iters**                 | Number of MCMC iterations for joint tree and model parameters inference.                                                                                         | 100000        |
+| **pt_inf_iters**                    | Number of MCMC iterations for tree inference.                                                                                                                    | 100000        |
+| **counts_penalty_s1**               | Constant controlling impact of penalty for large discrepancies between inferred and real count matrices.                                                         | 0.0           |
+| **counts_penalty_s2**               | Constant controlling impact of penalty for inferring clusters with changed copy number equal to basal ploidy.                                                    | 0.0           |
+| **event_length_penalty_k0**         | Constant controlling impact of penalty for long inferred events.                                                                                                 | 1.0           |
+| **tree_structure_prior_k1**         | Constant controlling impact of data size part of tree structure prior.                                                                                           | 1.0           |
+| **use_event_lengths_in_attachment** | If True cell attachment probability will depend on average event length in the history, otherwise it will be uniform.                                            | True          |
+| **seed**                            | Seed for C++ RNG                                                                                                                                                 | 12312         |
+| **mixture_size**                    | Initial number of components in difference distribution for breakpoint loci. This value may be decreased in the course of inference but will never be increased. | 4             |
+| **num_replicas**                    | Number of tempered chain replicas in MAP event tree search.                                                                                                      | 5             |
+| **threads_likelihood**              | Number of threads which will be used for the most demanding likelihood calculations.                                                                             | 4             |
+| **parameter_resampling_frequency**  | Number of tree MCMC moves for each parameter MCMC move.                                                                                                          | 10            |
+| **moves_between_swaps**             | Number of MCMC moves done by each replica before swap move is attempted.                                                                                         | 10            |
+| **burn_in**                         | Number of MCMC iterations which should be skipped before statistics gathering.                                                                                   | 10000         |
+| **verbose**                         | True if CONET should print messages during inference.                                                                                                            | True          |
 
 ### Guide to parameter settings
 
 For more details please refer to Additional File 1: S7 A recommended procedure for setting CONET regularization parameters.
 
-| Parameter name | Recommendation | Initial value |
-| ---- | -------- | --- |
-| **param_inf_iters** | Start with initial value, save and plot likelihood to check convergence. Depends on input size - number of cells and candidate breakpoint loci. | 250000 |
-| **pt_inf_iters** | Start with initial value, save and plot likelihood to check convergence. Depends on input size - number of cells and candidate breakpoint loci.  | 500000 |
-| **event_length_penalty_k0** | Start with initial value and increase if you want to penalize trees inferring long events. | 1.0 |
-| **tree_structure_prior_k1** | Start with initial value and try increasing/decreasing if quality measures are not satisfactory.  | 0.0 |
-| **counts_penalty_s1** | Start with initial value and try increasing/decreasing if quality measures are not satisfactory. | 100000.0 |
-| **counts_penalty_s2** | Start with initial value and try increasing/decreasing if quality measures are not satisfactory. | 100000.0 |
-| **seed** | Try using different seed to make sure you do not stuck in local optima. | 12312 |
+| Parameter name              | Recommendation                                                                                                                                  | Initial value |
+|-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| **param_inf_iters**         | Start with initial value, save and plot likelihood to check convergence. Depends on input size - number of cells and candidate breakpoint loci. | 250000        |
+| **pt_inf_iters**            | Start with initial value, save and plot likelihood to check convergence. Depends on input size - number of cells and candidate breakpoint loci. | 500000        |
+| **event_length_penalty_k0** | Start with initial value and increase if you want to penalize trees inferring long events.                                                      | 1.0           |
+| **tree_structure_prior_k1** | Start with initial value and try increasing/decreasing if quality measures are not satisfactory.                                                | 0.0           |
+| **counts_penalty_s1**       | Start with initial value and try increasing/decreasing if quality measures are not satisfactory.                                                | 100000.0      |
+| **counts_penalty_s2**       | Start with initial value and try increasing/decreasing if quality measures are not satisfactory.                                                | 100000.0      |
+| **seed**                    | Try using different seed to make sure you do not stuck in local optima.                                                                         | 12312         |
 
 We recommend that all other parametr values are left at default.
 
@@ -148,8 +125,6 @@ Binary matrix with inferred breakpoints per genomic locus and cell (coresspondin
 Model parameters inffered by CONET. 
 On first line mean and variance of no_breakpoint distribution (R+ truncated normal).
 On the following lines: weigth; mean; variance of the components of breakpoint distribution (R+ truncated mixed normal). One line per each component.
-#### edge_confidence
-Inferred CONET edges with number of iterations (after burn in phase) they appeared in.
 
 ## Final CN calling and output visualization 
 Final CN matrix can be inferred with provided R script. It also allows the user to visualize results of CONET model.

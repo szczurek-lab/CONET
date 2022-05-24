@@ -73,8 +73,8 @@ VectorCellProvider<double> dataToCellProvider(std::vector<std::vector<double>> d
 		}
 		provider.postCell(data[i]);
 	}
-	
-	provider.set_loci_to_name_map(names, chromosomes);
+
+	//provider.set_loci_to_name_map(names, chromosomes);
 	return provider;
 }
 
@@ -86,7 +86,6 @@ VectorCellProvider<double> getCellProvider(std::string path, char delimiter) {
 	auto data = stringDataToDouble(string_data);
 	return dataToCellProvider(data, names, chromosomes);
 }
-
 void read_counts_penalty_files(VectorCellProvider<double> &cells, std::string sum_counts_path, std::string squared_counts_path, char delimiter) {
 	auto counts_sum = getData(sum_counts_path, delimiter);
 	auto squared_counts = getData(squared_counts_path, delimiter);

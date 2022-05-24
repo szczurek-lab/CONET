@@ -181,13 +181,13 @@ public:
 		}
 	}
 
-	void toString(NodeHandle node, std::string &result, std::map<size_t, std::string> &loci_to_name) {
+	void toString(NodeHandle node, std::string &result) {
 		for (auto &child : node->children) {
-			result += get_node_label(node->breakpoints, loci_to_name) + "-" +
-				get_node_label(child->breakpoints, loci_to_name) + "\n";
+			result += get_node_label(node->breakpoints) + "-" +
+				get_node_label(child->breakpoints) + "\n";
 		}
 		for (auto &child : node->children) {
-			toString(child, result, loci_to_name);
+			toString(child, result);
 		}
 	}
 public:
@@ -570,18 +570,18 @@ public:
 		}
 	}
 
-	std::string get_node_label(BreakpointPair node, std::map<size_t, std::string> &loci_to_name)
+	std::string get_node_label(BreakpointPair node)
 	{
-		return "(" + loci_to_name[node.first] + ","
-			+ loci_to_name[node.second] + ")";
+		return "(" + std::to_string(node.first) + ","
+			+ std::to_string(node.second) + ")";
 	}
-	std::string toString(std::map<size_t, std::string> loci_to_name) {
+	std::string toString() {
 		std::string result = "";
 		for (auto &child : root->children) {
-			result += "(0,0)-" + get_node_label(child->breakpoints, loci_to_name) + "\n";
+			result += "(0,0)-" + get_node_label(child->breakpoints) + "\n";
 		}
 		for (auto &child : root->children) {
-			toString(child, result, loci_to_name);
+			toString(child, result);
 		}
 		return result;
 	}
