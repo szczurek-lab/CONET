@@ -22,10 +22,10 @@ corrected_counts_file <- "/TN2_corrected_counts_with_indices_50cells.csv"
 all_reads <- read.table(paste0(path, corrected_counts_file), sep =",", header = T, stringsAsFactors = F)
 
 ## give bin width - will be considered when checking which genes overlap with CN events
-bin_width_input <- 220000
+bin_width_input <- 150000
 
 ## set basal ploidy
-neutral_CN <- 3
+neutral_CN <- 2
 
 ## set maximum inferred integer CN
 ## if higher than 2*neutral_CN the colors in heatmaps may not reflect higher CNs

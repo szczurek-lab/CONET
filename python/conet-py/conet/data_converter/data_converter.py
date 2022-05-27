@@ -25,9 +25,8 @@ class DataConverter:
 
     def __create_diff_matrix(self, cc: CorrectedCounts) -> np.ndarray:
         NON_RATIO_DIFF_COLS = {
-            "chromosome": 1,
-            "bin_start": 0,
-            "total_bin_length_to_next_bin": 2
+            "chromosome": 0,
+            "total_bin_length_to_next_bin": 1
         }
 
         diffs_columns = cc.get_cells_count() + len(NON_RATIO_DIFF_COLS)
@@ -45,7 +44,6 @@ class DataConverter:
             next_loci_index = brkp_candidates_indices[i + 1]
 
             diffs[i, NON_RATIO_DIFF_COLS["chromosome"]] = cc.get_locus_chr(loci_index)
-            diffs[i, NON_RATIO_DIFF_COLS["bin_start"]] = cc.get_locus_bin_start(loci_index)
             diffs[i, NON_RATIO_DIFF_COLS["total_bin_length_to_next_bin"]] = \
                 cc.get_total_bin_length_between_loci(loci_index, next_loci_index) / self.event_length_normalizer
 
