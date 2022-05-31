@@ -10,13 +10,13 @@
 #include <utility>
 
 #include "cell_provider/vector_cell_provider.h"
-#include "likelihood/implementations/utils/gaussian_mixture.h"
+#include "likelihood/implementations/gaussian_mixture.h"
 #include "moves/move_type.h"
 #include "tree/tree_sampler.h"
 #include "tree/tree_formatter.h"
 #include "tree_sampler_coordinator.h"
 #include "likelihood/implementations/normal_mixture_likelihood.h"
-#include "likelihood_calculator.h"
+#include "likelihood_coordinator.h"
 #include "utils/random.h"
 #include "EM_estimator.h"
 #include "utils/logger/logger.h"
@@ -26,7 +26,7 @@
 #include "utils/utils.h"
 
 template <class Real_t> class ParallelTemperingCoordinator {
-private:
+public:
 	AdaptivePT<Real_t> adaptive_pt;
 	std::vector<Real_t> temperatures;
 	VectorCellProvider<Real_t> &provider;
@@ -43,79 +43,60 @@ private:
 
 	std::vector<EventTree> trees;
 	std::vector<TreeSamplerCoordinator<Real_t>*> tree_sampling_coordinators;
-	std::vector<LikelihoodCalculator<Real_t>*> likelihood_calculators;
-
-	std::condition_variable wait_for_mcmc_step;
-
-	std::atomic<bool> finished_swap_step{false };
-	std::mutex m_mutex;
-	std::atomic<int> finished_mcmc_step{ 0 };
+	std::vector<LikelihoodCoordinator<Real_t>*> likelihood_calculators;
 	
-	EventTree sample_tree2()
+	EventTree sample_starting_tree_for_chain()
 	{
 		VertexLabelSampler<double> vertexSet {provider.get_loci_count() - 1, provider.getChromosomeMarkers()};
 		return sample_tree<double>(5, vertexSet, random);
 	}
 
 
-	void prepare_sampling_services(NormalMixtureLikelihood<Real_t> *likelihood)
+	void prepare_sampling_services(LikelihoodData<Real_t> likelihood)
 	{
 		trees.reserve(THREADS_NUM);
 		likelihood_calculators.reserve(THREADS_NUM);
 		tree_sampling_coordinators.reserve(THREADS_NUM);
-		for (size_t i = 0; i < THREADS_NUM; i++)
-		{
-			EventTree tree = sample_tree2();
-			trees.push_back(tree);
+		for (size_t i = 0; i < THREADS_NUM; i++) {
+			trees.push_back(sample_starting_tree_for_chain());
 		}
-		for (size_t i = 0; i < THREADS_NUM; i++)
-		{
-			likelihood_calculators.emplace_back(new LikelihoodCalculator<Real_t>(likelihood, &trees[i], &provider, provider.get_loci_count() - 1, random.nextInt()));
+		for (size_t i = 0; i < THREADS_NUM; i++) {
+			likelihood_calculators.emplace_back(new LikelihoodCoordinator<Real_t>(likelihood, trees[i], &provider, provider.get_loci_count() - 1, random.nextInt()));
 		}
-		for (size_t i = 0; i < THREADS_NUM; i++)
-		{
-			tree_sampling_coordinators.emplace_back(new TreeSamplerCoordinator<Real_t>(&trees[i], likelihood_calculators[i], random.nextInt() , provider.get_loci_count() - 1, &provider, moveProbability, i));
+		for (size_t i = 0; i < THREADS_NUM; i++) {
+			tree_sampling_coordinators.emplace_back(new TreeSamplerCoordinator<Real_t>(trees[i], likelihood_calculators[i], random.nextInt() , provider.get_loci_count() - 1, &provider, moveProbability, i));
 		}
 		temperatures.push_back(1.0);
-		for (size_t i = 1; i < THREADS_NUM; i++)
-		{
+		for (size_t i = 1; i < THREADS_NUM; i++) {
 			temperatures.push_back(temperatures.back()*0.1);
 		}
-		for (size_t i = 0; i < THREADS_NUM; i++)
-		{
+		for (size_t i = 0; i < THREADS_NUM; i++) {
 			tree_sampling_coordinators[i]->set_temperature(temperatures[i]);
 		}
 	}
 
 	
-	std::tuple<Gauss::GaussianMixture<Real_t>, Gauss::Gaussian<Real_t>, Real_t> estimateParameters(Gauss::GaussianMixture<Real_t> mixture, Gauss::Gaussian<Real_t> no_breakpoint, const size_t iterations)
+	LikelihoodData<Real_t> estimateParameters(LikelihoodData<Real_t> likelihood, const size_t iterations)
 	{
-		log("Starting parameter estimation");
-		log("Mixture:");
-		log(mixture.to_string());
-		EventTree tree = sample_tree2();
-		log("Starting tree:");
-		log(TreeFormatter::to_string_representation(tree));
-		NormalMixtureLikelihood<Real_t> likelihood(no_breakpoint, mixture, random.nextInt());
-		LikelihoodCalculator<Real_t> calc(&likelihood, &tree, &provider, provider.get_loci_count() - 1, random.nextInt());
-		TreeSamplerCoordinator<Real_t> coordinator(&tree, &calc, random.nextInt(), provider.get_loci_count() - 1, &provider, moveProbability, false);
+		log("Starting parameter MCMC estimation...");
+		EventTree tree = sample_starting_tree_for_chain();
+		LikelihoodCoordinator<Real_t> calc(likelihood, tree, &provider, provider.get_loci_count() - 1, random.nextInt());
+		TreeSamplerCoordinator<Real_t> coordinator(tree, &calc, random.nextInt(), provider.get_loci_count() - 1, &provider, moveProbability, false);
 
-		for (size_t i = 0; i < iterations; i++)
-		{
-			if (i % PARAMETER_RESAMPLING_FREQUENCY == 0)
-			{
-				calc.resampleParameters(coordinator.getLogTreePrior(), coordinator.tree_count_score);
-				coordinator.recount_score();
+		for (size_t i = 0; i < iterations; i++) {
+			if (i % PARAMETER_RESAMPLING_FREQUENCY == 0) {
+				calc.resampleParameters(coordinator.get_log_tree_prior(), coordinator.tree_count_dispersion_penalty);
 			}
-			coordinator.treeMHStep(); 
+			coordinator.execute_metropolis_hastings_step(); 
 		}
 		log("Finished parameter estimation");
-		auto map = likelihood.get_MAP();
-        log("Estimated breakpoint distribution:");
-        log(map.first.to_string());
-        log("Estimated no-breakpoint distribution:");
-        log(map.second.to_string());
-		return std::make_tuple(map.first, map.second, calc.MAP);
+        calc.MAP_parameters.brkp_likelihood.remove_components_with_small_weight(0.01);
+		log("Estimated breakpoint distribution:");
+        log(calc.MAP_parameters.brkp_likelihood.to_string());
+		log("Estimated no-breakpoint distribution:");
+        log(calc.MAP_parameters.no_brkp_likelihood.to_string());
+
+		return calc.MAP_parameters;
 	}
 
 	void mcmc_simulation(size_t iterations)
@@ -124,7 +105,7 @@ private:
 		{
 			std::vector<std::thread> threads;
 			for (size_t th = 0; th < THREADS_NUM; th++) {
-				threads.emplace_back([this, th] { for (size_t i = 0; i < (size_t) NUMBER_OF_MOVES_BETWEEN_SWAPS; i++) this->tree_sampling_coordinators[th]->treeMHStep(); });
+				threads.emplace_back([this, th] { for (size_t i = 0; i < (size_t) NUMBER_OF_MOVES_BETWEEN_SWAPS; i++) this->tree_sampling_coordinators[th]->execute_metropolis_hastings_step(); });
 			}
 			for (auto &th : threads)
 			{
@@ -134,32 +115,29 @@ private:
             
             if (VERBOSE && i % 1000 == 0) {
                 log("State after " , i*NUMBER_OF_MOVES_BETWEEN_SWAPS, " iterations:");
-                log("Tree size: ", this->tree_sampling_coordinators[0]->tree->get_size());
-                log("Log-likelihood: ", this->likelihood_calculators[0]->getLikelihood());
-                log("Log-likelihood with penalty: ", this->likelihood_calculators[0]->getLikelihood() + this->tree_sampling_coordinators[0]->getLogTreePrior() + this->tree_sampling_coordinators[0]->tree_count_score);
+                log("Tree size: ", this->tree_sampling_coordinators[0]->tree.get_size());
+                log("Log-likelihood: ", this->likelihood_calculators[0]->get_likelihood());
+                log("Log-likelihood with penalty: ",  this->tree_sampling_coordinators[0]->get_total_likelihood());
                 
             }
 		}
 	}
 
-
 	void swap_step()
 	{
 		std::vector<Real_t> states;
-		for (size_t i = 0; i < likelihood_calculators.size(); i++)
-		{
-			states.push_back(likelihood_calculators[i]->getLikelihood());
+		for (size_t i = 0; i < likelihood_calculators.size(); i++) {
+			states.push_back(likelihood_calculators[i]->get_likelihood());
 		}
 		adaptive_pt.update(states);
 		this->temperatures = adaptive_pt.get_temperatures();
 
-		for (size_t i = 0; i < likelihood_calculators.size(); i ++)
-		{
+		for (size_t i = 0; i < likelihood_calculators.size(); i ++) {
 			tree_sampling_coordinators[i]->set_temperature(temperatures[i]);
 		}
 		int pid = random.nextInt(THREADS_NUM - 1);
-		auto likelihood_left = tree_sampling_coordinators[pid]->get_likelihood();
-		auto likelihood_right = tree_sampling_coordinators[pid + 1]->get_likelihood();
+		auto likelihood_left = tree_sampling_coordinators[pid]->get_likelihood_without_priors_and_penalty();
+		auto likelihood_right = tree_sampling_coordinators[pid + 1]->get_likelihood_without_priors_and_penalty();
 		Real_t swap_acceptance_ratio = (temperatures[pid] - temperatures[pid + 1]) * (likelihood_right - likelihood_left);
 		if (random.logUniform() <= swap_acceptance_ratio)
 		{
@@ -167,11 +145,10 @@ private:
 			tree_sampling_coordinators[pid + 1]->set_temperature(temperatures[pid]);
 			std::swap(tree_sampling_coordinators[pid], tree_sampling_coordinators[pid + 1]);
 			std::swap(likelihood_calculators[pid], likelihood_calculators[pid + 1]);
-            std::swap(tree_sampling_coordinators[pid]->pid, tree_sampling_coordinators[pid + 1]->pid);
 		}
 	}
 
-	std::pair<Gauss::GaussianMixture<Real_t>, Gauss::Gaussian<Real_t>> prepare_starting_parameters()
+	LikelihoodData<Real_t> prepare_starting_parameters()
 	{
 
 		std::vector<Real_t> means;
@@ -201,20 +178,18 @@ private:
 		means.erase(means.begin());
 		weights.erase(weights.begin());
 		Gauss::GaussianMixture<Real_t> mixture(weights, means, variances, random);
-		mixture.prune();
-		return std::make_pair(mixture, gaussian);
+		mixture.remove_components_with_small_weight(0.01);
+		return LikelihoodData<Real_t>(gaussian, mixture);
 	}
 
-	CONETInferenceResult<Real_t> choose_best_tree()
-	{
-		auto best = tree_sampling_coordinators[0]->getBestTreeData();
+	CONETInferenceResult<Real_t> choose_best_tree() {
+		auto best = tree_sampling_coordinators[0]->get_inferred_tree();
 		for (auto replica : tree_sampling_coordinators) {
-
-			if (std::get<2>(replica->getBestTreeData()) > std::get<2>(best)) {
-				best = replica->getBestTreeData();
+			if (replica->get_inferred_tree().likelihood > best.likelihood) {
+				best = replica->get_inferred_tree();
 			}
 		}
-		return CONETInferenceResult<Real_t>{std::get<0>(best), std::get<1>(best)};
+		return best;
 	}
 public:
 	ParallelTemperingCoordinator(VectorCellProvider<Real_t> &provider, Random<Real_t> &random): 
@@ -226,11 +201,9 @@ public:
 
 CONETInferenceResult<Real_t> simulate(size_t iterations_parameters, size_t iterations_pt)
 	{
-		auto parameters = prepare_starting_parameters();
-		auto parameters_MAP = estimateParameters(parameters.first, parameters.second, iterations_parameters);
-		std::get<0>(parameters_MAP).prune();
-		NormalMixtureLikelihood<Real_t> likelihood(std::get<1>(parameters_MAP), std::get<0>(parameters_MAP), random.nextInt());
-		prepare_sampling_services(&likelihood);
+		auto parameters_MAP = estimateParameters(prepare_starting_parameters(), iterations_parameters);
+		random.nextInt();// mozesz usuanc pozniej
+		prepare_sampling_services(parameters_MAP);
 		mcmc_simulation(iterations_pt);
 		return choose_best_tree();
 	}

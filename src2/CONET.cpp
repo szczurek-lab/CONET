@@ -109,6 +109,6 @@ int main(int argc, char **argv)
 
 	tree_file << TreeFormatter::to_string_representation(result.tree);
 
-    save_attachment(data_dir, string(output_dir).append("inferred_attachment"), result.attachment);
+    save_attachment(data_dir, string(output_dir).append("inferred_attachment"), result.attachment.cell_to_tree_label);
     return 0;
 }

@@ -312,7 +312,7 @@ public:
 	 * @param node1 - will be given label of node @node2
 	 * @param node2 - will be given label of node @node1
 	 */
-	void swapLabels(NodeHandle node1, NodeHandle node2)
+	void swap_labels(NodeHandle node1, NodeHandle node2)
 	{
 		std::swap(node1->label, node2->label);
 		update_new_breakpoints(node1);

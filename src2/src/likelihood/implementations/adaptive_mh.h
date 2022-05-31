@@ -6,7 +6,7 @@ template <class Real_t> class AdaptiveMH {
 private:
 	const Real_t epsilon = 0.0001;
 	const Real_t initialVar = 0.0001;
-	const Real_t scaling = (1.0) * (1.0);//2.4
+	const Real_t scaling = (1.0) * (1.0);
 	const Real_t initSegment = 10;
 	
 	Real_t var{ initialVar };
@@ -18,11 +18,6 @@ private:
 public:
 	AdaptiveMH<Real_t>() {}
 
-	Real_t get()
-	{
-		return scaling * var + scaling * epsilon;
-		
-	}
 	Real_t get(Real_t x) {
 		const Real_t averageOld = average;
 		average = average * numberObservations / (numberObservations + 1) + 1 / (numberObservations + 1) * x;

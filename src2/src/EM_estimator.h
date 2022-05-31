@@ -82,7 +82,7 @@ template <class Real_t> class EMEstimator
 public:
 	EMEstimator<Real_t>(std::vector<Real_t> data): data{data} {}
 
-	Real_t get_likelihood()
+	/*Real_t get_likelihood()
 	{
 		Real_t res = 0.0;
 		for (size_t arg = 0; arg < data.size(); arg++)
@@ -95,7 +95,7 @@ public:
 			res += std::log(l);
 		}
 		return res;
-	}
+	}*/
 	
 	void estimate(std::vector<Real_t> &means_, std::vector<Real_t> &variances_, std::vector<Real_t> &weights_)
 	{

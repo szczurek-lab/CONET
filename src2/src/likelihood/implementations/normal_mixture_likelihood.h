@@ -3,98 +3,51 @@
 #include <utility>
 #include <fstream>
 
-#include "utils/gaussian_utils.h"
-#include "utils/gaussian_mixture.h"
-#include "utils/gaussian.h"
+#include "gaussian_utils.h"
+#include "gaussian_mixture.h"
+#include "gaussian.h"
 
-template <class Real_t> class NormalMixtureLikelihood {
+
+template <class Real_t> class LikelihoodData {
 public:
-	Random<Real_t> random;
-	Gauss::Gaussian<Real_t> noBrkpNormal;
-	Gauss::GaussianMixture<Real_t> mixture;
-
-	Gauss::Gaussian<Real_t> previousNoBrkpNormal;
-	Gauss::GaussianMixture<Real_t> previousMixture;
-	size_t step{ 0 };
-
-	Gauss::Gaussian<Real_t> no_brkp_map;
-	Gauss::GaussianMixture<Real_t> mixture_map;
+	Gauss::Gaussian<Real_t> no_brkp_likelihood;
+	Gauss::GaussianMixture<Real_t> brkp_likelihood;
 public:
 
-	Real_t count = 0;
-	Real_t meanSd = 0;
-	std::vector < std::vector<Real_t>> params;
-
-	NormalMixtureLikelihood(Gauss::Gaussian<Real_t> noBrkp, Gauss::GaussianMixture<Real_t> mxt, unsigned int seed)
-		:random{ seed }, noBrkpNormal{ noBrkp }, mixture{ mxt }, previousNoBrkpNormal{ noBrkp }, previousMixture{ mxt }, no_brkp_map{ noBrkp }, mixture_map{ mxt } {
-		params.resize(3);
-		for (int i = 0; i < 3; i++) {
-			params[i].resize(mxt.size);
-		}
-	}
-	std::pair<Gauss::GaussianMixture<Real_t>, Gauss::Gaussian<Real_t>> get_MAP()
-	{
-		return std::make_pair(mixture_map, no_brkp_map);
+	LikelihoodData(Gauss::Gaussian<Real_t> noBrkp, Gauss::GaussianMixture<Real_t> mxt): no_brkp_likelihood{noBrkp}, brkp_likelihood {mxt}
+	 {
 	}
 	
-	void getLogLikelihoodNoBreakpoint(std::vector<std::vector<Real_t>> &resultHolder, const std::vector<std::vector<Real_t>> &logCounts) const {
-		noBrkpNormal.getLogLikelihood(resultHolder, logCounts);
+	void fill_no_breakpoint_log_likelihood_matrix(std::vector<std::vector<Real_t>> &matrix, const std::vector<std::vector<Real_t>> &corrected_counts) const {
+		no_brkp_likelihood.fill_matrix_log_likelihood(matrix, corrected_counts);
 	}
 
-	void getLogLikelihoodBreakpoint(std::vector<std::vector<Real_t>> &resultHolder, const std::vector<std::vector<Real_t>> &logCounts) const {
-		mixture.getLogLikelihood(resultHolder, logCounts);
+	void fill_breakpoint_log_likelihood_matrix(std::vector<std::vector<Real_t>> &matrix, const std::vector<std::vector<Real_t>> &corrected_counts) const {
+		brkp_likelihood.fill_matrix_log_likelihood(matrix, corrected_counts);
 	}
 	
-	Real_t getParamsPrior() {
-		Real_t result = mixture.getParamsPrior() + noBrkpNormal.getParamsPrior();
-		result -= Gauss::gaussianLogLikelihood<Real_t>(noBrkpNormal.mean, 0.0, 1.0);
-		return result;
+	Real_t get_likelihood_parameters_prior() {
+		return brkp_likelihood.get_parameters_prior() + no_brkp_likelihood.get_parameters_prior() - Gauss::truncated_gaussian_log_likelihood<Real_t>(no_brkp_likelihood.mean, 0.0, 1.0);
 	}
 
-	std::pair<Real_t, Real_t> resampleParametersGibbs() {
-		step = (step + 1) % (3*mixture.size + 1);
-		if (step == 0) {
-			return noBrkpNormal.resampleVariance();
+	bool likelihood_is_valid() {
+		for (auto &g : brkp_likelihood.gaussians) {
+			if (g.mean >= 0  || g.sd <= 0.0)  {
+				return false;
+			}
 		}
-		else {
-			return mixture.resampleNth((step - 1)/3, (step - 1) % 3);
+		if (no_brkp_likelihood.sd <= 0) {
+			return false;
 		}
-	}
-
-	bool valid() {
-		for (auto &g : mixture.gaussians) {
-			if (g.mean >= 0  || g.sd <= 0.0) return false;
-		}
-		if (noBrkpNormal.sd <= 0) return false;
 		return true;
 	}
 
-	std::pair<Real_t, Real_t> resampleParameters() {
-			return resampleParametersGibbs();
-	}
-
-	void rollBackParametersResample() {
-		noBrkpNormal = previousNoBrkpNormal;
-		mixture = previousMixture;
-	}
-
-	void acceptSampledParameters() {
-		previousNoBrkpNormal = noBrkpNormal;
-		previousMixture = mixture;
-	}
-
-	void update_map()
-	{
-		no_brkp_map = noBrkpNormal;
-		mixture_map = mixture;
-	}
-
 	std::string toString() {
-		std::string res = "(" + std::to_string(noBrkpNormal.mean) + "," + std::to_string(noBrkpNormal.sd) + ")\n";
-		for (size_t i = 0; i < mixture.gaussians.size(); i++) { 
-			auto g = mixture.gaussians[i];
+		std::string res = "(" + std::to_string(no_brkp_likelihood.mean) + "," + std::to_string(no_brkp_likelihood.sd) + ")\n";
+		for (size_t i = 0; i < brkp_likelihood.gaussians.size(); i++) { 
+			auto g = brkp_likelihood.gaussians[i];
 
-			res +=  "(" + std::to_string(mixture.weights[i]) + " ," + std::to_string(g.mean) + "," + std::to_string(g.sd) + ")\n";
+			res +=  "(" + std::to_string(brkp_likelihood.weights[i]) + " ," + std::to_string(g.mean) + "," + std::to_string(g.sd) + ")\n";
 		}
 		return res;
 	}

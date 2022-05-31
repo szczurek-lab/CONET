@@ -4,8 +4,8 @@
 #include <thread>
 
 #include "gaussian_utils.h"
-#include "../../../utils/random.h"
-#include "../../../parameters/parameters.h"
+#include "../../utils/random.h"
+#include "../../parameters/parameters.h"
 #include "adaptive_mh.h"
 
 namespace Gauss {
@@ -17,14 +17,14 @@ namespace Gauss {
 		AdaptiveMH<Real_t> adaptiveMHMean; 
 		AdaptiveMH<Real_t> adaptiveMHVariance; 
 
-		void getLogLikelihoodParallel(std::vector<std::vector<Real_t>> &resultHolder, const std::vector<std::vector<Real_t>> &logCounts) const {
+		void fill_matrix_log_likelihood_parallelized(std::vector<std::vector<Real_t>> &matrix, const std::vector<std::vector<Real_t>> &sample) const {
 			std::vector<std::thread> threads;
-			size_t perThread = resultHolder.size() / THREADS_LIKELIHOOD;
+			size_t perThread = matrix.size() / THREADS_LIKELIHOOD;
 			for (size_t th = 0; th < THREADS_LIKELIHOOD; th++) {
-				size_t right = th == THREADS_LIKELIHOOD - 1 ? resultHolder.size() : perThread * (th + 1);
-				threads.emplace_back([&resultHolder, &logCounts, th, perThread, right, this] { 
+				size_t right = th == THREADS_LIKELIHOOD - 1 ? matrix.size() : perThread * (th + 1);
+				threads.emplace_back([&matrix, &sample, th, perThread, right, this] { 
 					for (size_t c = perThread * th; c < right; c++) {
-						Gauss::gaussianLogLikelihood(resultHolder[c], logCounts[c], this->mean, this->sd);
+						Gauss::truncated_gaussian_log_likelihood(matrix[c], sample[c], this->mean, this->sd);
 					}
 				 });
 			}
@@ -37,22 +37,22 @@ namespace Gauss {
 		Gaussian(Real_t mean, Real_t sd, Random<Real_t> &random) : mean {mean}, sd {sd}, random {random} {}
 
 
-		void getLogLikelihood(std::vector<std::vector<Real_t>> &resultHolder, const std::vector<std::vector<Real_t>> &logCounts) const {
+		void fill_matrix_log_likelihood(std::vector<std::vector<Real_t>> &matrix, const std::vector<std::vector<Real_t>> &sample) const {
 			if (THREADS_LIKELIHOOD > 1) {
-				getLogLikelihoodParallel(resultHolder, logCounts);
+				fill_matrix_log_likelihood_parallelized(matrix, sample);
 			} else {
-				for (size_t c = 0; c < resultHolder.size(); c++) {
-					Gauss::gaussianLogLikelihood(resultHolder[c], logCounts[c], mean, sd);
+				for (size_t c = 0; c < matrix.size(); c++) {
+					Gauss::truncated_gaussian_log_likelihood(matrix[c], sample[c], mean, sd);
 				}
 			}
 		}
 
-		Real_t getParamsPrior() {
-			return Gauss::gaussianLogLikelihood<Real_t>(mean, 0.0, 1.0) + Gauss::gaussianLogLikelihood<Real_t>(sd, 0.0, 1.0);
+		Real_t get_parameters_prior() {
+			return Gauss::truncated_gaussian_log_likelihood<Real_t>(mean, 0.0, 1.0) + Gauss::truncated_gaussian_log_likelihood<Real_t>(sd, 0.0, 1.0);
 		}
 
 		std::pair<Real_t, Real_t> resample() {
-			return resampleVariance() + resampleMean();
+			return resample_standard_deviation() + resampleMean();
 		}
 
 		std::pair<Real_t, Real_t> resampleMean() {
@@ -62,7 +62,7 @@ namespace Gauss {
 			return meanResult;
 		}
 
-		std::pair<Real_t, Real_t> resampleVariance() {
+		std::pair<Real_t, Real_t> resample_standard_deviation() {
 			const Real_t step = adaptiveMHVariance.get(sd);
 			sd += std::sqrt(step) * random.normal();
 			return std::make_pair(1.0, 1.0);
