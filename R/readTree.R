@@ -18,14 +18,14 @@ source(paste0(path, "/functionsCONET.R"))
 
 ## read in per-bin data input
 ## here we read in a subsample of 50 cells from TN2 breast cancer sample sequenced using ACT
-corrected_counts_file <- "/TN2_corrected_counts_with_indices_50cells.csv"
+corrected_counts_file <- "/SA501X3F_filtered_corrected_counts_chr_17_18_20_23.csv"
 all_reads <- read.table(paste0(path, corrected_counts_file), sep =",", header = T, stringsAsFactors = F)
 
 ## give bin width - will be considered when checking which genes overlap with CN events
-bin_width_input <- 220000
+bin_width_input <- 150000
 
 ## set basal ploidy
-neutral_CN <- 3
+neutral_CN <- 2
 
 ## set maximum inferred integer CN
 ## if higher than 2*neutral_CN the colors in heatmaps may not reflect higher CNs
@@ -35,8 +35,8 @@ maximum_inferred_CN <- 2*neutral_CN
 # in the example we have output from our CONET inferred for TN2 sample
 # please remember that the tree looks differently from publication 
 # because we only use subsample for illustration purposes
-TREE_FILE_NAME <- "inferred_tree"
-ATTACHMENT_FILE_NAME <- "inferred_attachment"
+TREE_FILE_NAME <- "inferred_tree (3)"
+ATTACHMENT_FILE_NAME <- "inferred_attachment (3)"
 
 
 #######################    cancer genes data    #######################

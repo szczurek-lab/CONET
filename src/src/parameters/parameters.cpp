@@ -1,6 +1,6 @@
 #include "parameters.h"
 
-size_t THREADS_NUM = 1;
+size_t NUM_REPLICAS = 1;
 bool USE_EVENT_LENGTHS_IN_ATTACHMENT = false;
 double DATA_SIZE_PRIOR_CONSTANT = 0.01;
 double COUNTS_SCORE_CONSTANT_0 = 0.1;
@@ -11,6 +11,5 @@ size_t NUMBER_OF_MOVES_BETWEEN_SWAPS = 10;
 size_t THREADS_LIKELIHOOD = 10;
 size_t MIXTURE_SIZE = 8;
 long SEED = 12312414;
-size_t BURNIN = 100000;
 bool VERBOSE = false;
 double NEUTRAL_CN = 2;

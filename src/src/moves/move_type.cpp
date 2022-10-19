@@ -1,6 +1,6 @@
 #include "move_type.h"
 
-std::string moveTypeToString(MoveType type) {
+std::string move_type_to_string(MoveType type) {
 	switch (type) {
 	case DELETE_LEAF:
 		return "Delete leaf";

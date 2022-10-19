@@ -1,21 +1,24 @@
+BOOST_LIB = /usr/local/lib
+BOOST_INC = /usr/local/include
+
 PROG = CONET
 CC = g++
-CPPFLAGS = -O3 -std=c++14 -lpthread -g
-LDFLAGS = -lpthread
-OBJS = CONET.o logger.o parameters.o breakpoints.o csv_reader.o move_type.o
+CPPFLAGS = -I${BOOST_INC} -O3 -std=c++17 -lpthread -g -pg
+LDFLAGS = -lpthread -pg -g -lboost_program_options
+OBJS = CONET.o logger.o parameters.o types.o csv_reader.o move_type.o
 
 $(PROG) : $(OBJS)
-	$(CC) $(LDFLAGS)  -o $(PROG) $(OBJS) -lpthread
+	$(CC) -I${BOOST_INC} -L${BOOST_LIB} -o $(PROG) $(OBJS) $(LDFLAGS)
 CONET.o:
 	$(CC) $(CPPFLAGS) -c CONET.cpp
 parameters.o: src/parameters/parameters.h
-	$(CC) $(CPPFLAGS) -c src/parameters/parameters.cpp 
+	$(CC) $(CPPFLAGS) -c src/parameters/parameters.cpp
 logger.o: src/utils/logger/logger.h
 	$(CC) $(CPPFLAGS) -c src/utils/logger/logger.cpp 
-breakpoints.o: src/utils/breakpoints/breakpoints.h
-	$(CC) $(CPPFLAGS) -c src/utils/breakpoints/breakpoints.cpp
-csv_reader.o: src/cell_provider/csv_reader/csv_reader.h
-	$(CC) $(CPPFLAGS) -c src/cell_provider/csv_reader/csv_reader.cpp
+types.o: src/types.h
+	$(CC) $(CPPFLAGS) -c src/types.cpp
+csv_reader.o: src/input_data/csv_reader.h
+	$(CC) $(CPPFLAGS) -c src/input_data/csv_reader.cpp
 move_type.o: src/moves/move_type.h
 	$(CC) $(CPPFLAGS) -c src/moves/move_type.cpp
 clean:
