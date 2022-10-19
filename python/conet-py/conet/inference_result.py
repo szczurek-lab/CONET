@@ -35,7 +35,7 @@ class InferenceResult:
             if node == (0, 0):
                 return "(0,0)"
             chr = int(self.__cc.get_locus_chr(node[0]))
-            return f"({chr}_{self.__cc.get_locus_bin_start(node[0])},{chr}_{self.__cc.get_locus_bin_start(node[1])})"
+            return f"({chr}_{int(self.__cc.get_locus_bin_start(node[0]))},{chr}_{int(self.__cc.get_locus_bin_start(node[1]))})"
 
         with open(dir + "inferred_tree", 'w') as f:
             for edge in self.__tree.edges:
@@ -72,6 +72,7 @@ class InferenceResult:
             attached to subtree rooted at the node.
         """
         cum_attach = {}
+        print(self.__tree.nodes)
         for node in nx.traversal.dfs_postorder_nodes(self.__tree, source=(0, 0)):
             cum_attach[node] = [cell for cell in range(0, len(self.__attachment)) if self.__attachment[cell] == node]
             for child in self.__tree.successors(node):
@@ -123,12 +124,16 @@ class InferenceResult:
             s = s.strip().replace('(', '').replace(')', '')
             return int(s.split(',')[0]), int(s.split(',')[1])
 
+        def __tuple(t):
+            if t[0] == t[1]:
+                return t
+            return brkp_candidates[t[0]], brkp_candidates[t[1]]
+
         brkp_candidates = self.__cc.get_brkp_candidate_loci_idx()
         with open(path) as f:
             edges = [(__int_tuple_from_str(line.split('-')[0]), __int_tuple_from_str(line.split('-')[1])) for line in
                      f.readlines()]
-            edges = [((brkp_candidates[e[0][0]], brkp_candidates[e[0][1]]),
-                      (brkp_candidates[e[1][0]], brkp_candidates[e[1][1]])) for e in edges]
+            edges = [(__tuple(e[0]), __tuple(e[1])) for e in edges]
             tree = nx.DiGraph()
             tree.add_edges_from(edges)
             return tree
@@ -136,5 +141,5 @@ class InferenceResult:
     def __load_attachment(self, path: str) -> List[Tuple[int, int]]:
         brkp_candidates = self.__cc.get_brkp_candidate_loci_idx()
         with open(path) as f:
-            return [(brkp_candidates[int(line.split(';')[2])], brkp_candidates[int(line.split(';')[3])]) for line in
+            return [(brkp_candidates[int(line.split(';')[1])], brkp_candidates[int(line.split(';')[2])]) for line in
                     f.readlines()]

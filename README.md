@@ -31,13 +31,25 @@ This project consists of 3 main components:
 * R script for advanced plots of inference results 
 
 # Installation
-
 ## In container 
+Use image *tc360950/conet_py_sing:latest*. At minimum, the entrypoint expects 3 arguments: 
+- data_dir - on container directory where CONET data will be stored (must end with /)
+- output_dir - on container directory where CONET output will be saved (must end with /)
+- corrected_counts_file - path to corrected counts file 
+
+Exemplary call may look as follows:
+
+*docker run -v /home/user/Desktop/CONET/:/data tc360950/conet_py_sing:latest --data_dir /data/ --output_dir /data/out/ --corrected_counts_file /data/SA501X3F_filtered_corrected_counts_chr_17_18_20_23.csv*
+
+Where SA501X3F_filtered_corrected_counts_chr_17_18_20_23.csv has been saved in /home/user/Desktop/CONET/ on host and we mount the directory to the container. 
+
+Other available parameters are described in *Usage Details* section 
+## In container with jupyter
 Use image defined in *CONET.Dockerfile*. It installs conet-py and compiles cpp CONET into executable 
 *~/conet-py/CONET*. If you want to install CONET locally it's easy to mimic steps executed in the image. 
 
 
-# Input Data
+# Input Data (used as an input to Python wrapper)
 
 ### Corrected counts matrix 
 Basic input data should be provided in the form of corrected counts matrix. With subsequent bins in rows and cells in columns.
@@ -61,7 +73,7 @@ Example of input matrix for SA501X3F xenograft breast cancer data is contained i
 and for TN2 breast cancer data -- in CONET/R/TN2_corrected_counts_with_indices_50cells.csv
 ```
 
-## CONET should be used with the aid of provided Python scripts. 
+## CONET should be used with the aid of provided Python scripts - there's no way to call CPP code directly
 
 Examples and details are provided in three notebooks:
 #### Biological_data
@@ -91,10 +103,8 @@ CONET depends on a number of user-defined parameters which are represented by ob
 | **seed**                            | Seed for C++ RNG                                                                                                                                                 | 12312         |
 | **mixture_size**                    | Initial number of components in difference distribution for breakpoint loci. This value may be decreased in the course of inference but will never be increased. | 4             |
 | **num_replicas**                    | Number of tempered chain replicas in MAP event tree search.                                                                                                      | 5             |
-| **threads_likelihood**              | Number of threads which will be used for the most demanding likelihood calculations.                                                                             | 4             |
-| **parameter_resampling_frequency**  | Number of tree MCMC moves for each parameter MCMC move.                                                                                                          | 10            |
-| **moves_between_swaps**             | Number of MCMC moves done by each replica before swap move is attempted.                                                                                         | 10            |
-| **burn_in**                         | Number of MCMC iterations which should be skipped before statistics gathering.                                                                                   | 10000         |
+| **threads_likelihood**              | Number of threads which will be used for the most demanding likelihood calculations.                                                                             | 4             |                                                                                      | 10            |
+| **neutral_cn**                      | Neutral copy number.                                                                                                                                             | 10000         |
 | **verbose**                         | True if CONET should print messages during inference.                                                                                                            | True          |
 
 ### Guide to parameter settings
@@ -111,7 +121,7 @@ For more details please refer to Additional File 1: S7 A recommended procedure f
 | **counts_penalty_s2**       | Start with initial value and try increasing/decreasing if quality measures are not satisfactory.                                                | 100000.0      |
 | **seed**                    | Try using different seed to make sure you do not stuck in local optima.                                                                         | 12312         |
 
-We recommend that all other parametr values are left at default.
+We recommend that all other parameters values are left at default.
 
 
 ## Output of CONET

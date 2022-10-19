@@ -1,7 +1,6 @@
 #include "logger.h"
 
-void print()
-{
+void print() {
 	std::cout << std::endl;
 }
 
